@@ -152,24 +152,27 @@ export function OrderDetailModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 flex items-end md:items-center justify-center p-4">
-        <div className="bg-card rounded-t-lg md:rounded-lg border border-border w-full md:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <div className="sticky top-0 bg-card border-b border-border p-4 md:p-6 flex items-center justify-between">
-            <div>
-              <h2 className="text-xl md:text-2xl font-bold">{order.customer_name}</h2>
-              <p className="text-sm text-muted-foreground mt-1">Solicitud {requestNumberLabel} · {order.customer_phone}</p>
+      <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
+        <div role="dialog" aria-modal="true" aria-labelledby="order-detail-title" className="flex h-[100dvh] w-full flex-col overflow-hidden bg-card sm:h-auto sm:max-h-[92dvh] sm:max-w-2xl sm:rounded-xl sm:border sm:border-border">
+          <div className="flex shrink-0 items-center justify-between border-b border-border px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] sm:px-6 sm:py-4">
+            <div className="min-w-0">
+              <p className="eyebrow mb-1">Solicitud {requestNumberLabel}</p>
+              <h2 id="order-detail-title" className="truncate text-xl font-bold tracking-[-0.025em]">{order.customer_name}</h2>
+              <a className="mt-1 inline-block text-sm text-muted-foreground underline-offset-4 hover:underline" href={`https://wa.me/${order.customer_phone.replace(/\D/g, '')}`}>{order.customer_phone}</a>
             </div>
-            <button onClick={() => onOpenChange(false)} className="p-2 hover:bg-muted rounded-lg transition" type="button">
-              <X size={24} />
+            <button onClick={() => onOpenChange(false)} className="flex size-11 shrink-0 items-center justify-center rounded-lg hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" type="button" aria-label="Cerrar detalle">
+              <X size={22} />
             </button>
           </div>
 
-          <div className="border-b border-border flex">
+          <div className="flex shrink-0 border-b border-border" role="tablist" aria-label="Secciones del pedido">
             {(['info', 'payments', 'actions'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 px-4 py-3 font-medium text-sm transition ${
+                role="tab"
+                aria-selected={activeTab === tab}
+                className={`min-h-11 flex-1 border-b-2 px-3 text-sm font-semibold transition-colors ${
                   activeTab === tab ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
                 }`}
                 type="button"
@@ -181,7 +184,7 @@ export function OrderDetailModal({
             ))}
           </div>
 
-          <div className="p-4 md:p-6">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:px-6">
             {activeTab === 'info' && (
               <div className="space-y-6">
                 <div>
@@ -215,18 +218,18 @@ export function OrderDetailModal({
                   </div>
                 </div>
 
-                <div className="space-y-3 bg-muted/50 rounded-lg p-4">
+                <div className="overflow-hidden rounded-lg border border-border">
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Total</span>
-                    <span className="font-semibold">{formatMoney(order.total_amount)}</span>
+                    <span className="p-3 text-sm text-muted-foreground">Total</span>
+                    <span className="numeric p-3 font-semibold">{formatMoney(order.total_amount)}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Pagado</span>
-                    <span className="font-semibold">{formatMoney(order.paid_amount)}</span>
+                  <div className="flex items-center justify-between border-t border-border">
+                    <span className="p-3 text-sm text-muted-foreground">Cobrado</span>
+                    <span className="numeric p-3 font-semibold text-emerald-700">{formatMoney(order.paid_amount)}</span>
                   </div>
-                  <div className="border-t border-border pt-3 flex justify-between items-center">
-                    <span className="font-semibold">Saldo</span>
-                    <span className={`font-bold text-lg ${order.balance_amount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                  <div className="flex items-center justify-between border-t border-border bg-muted/40">
+                    <span className="p-3 font-semibold">Saldo pendiente</span>
+                    <span className={`numeric p-3 text-lg font-bold ${order.balance_amount > 0 ? 'text-red-700' : 'text-emerald-700'}`}>
                       {formatMoney(order.balance_amount)}
                     </span>
                   </div>
@@ -263,18 +266,18 @@ export function OrderDetailModal({
 
             {activeTab === 'payments' && (
               <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-3 text-sm bg-muted/50 rounded-lg p-4">
+                <div className="grid grid-cols-3 divide-x divide-border overflow-hidden rounded-lg border border-border text-sm">
                   <div>
-                    <p className="text-muted-foreground">Total</p>
-                    <p className="font-semibold">{formatMoney(order.total_amount)}</p>
+                    <p className="p-3 pb-0 text-xs text-muted-foreground">Total</p>
+                    <p className="numeric p-3 pt-1 font-semibold">{formatMoney(order.total_amount)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Pagado</p>
-                    <p className="font-semibold">{formatMoney(currentPaid)}</p>
+                    <p className="p-3 pb-0 text-xs text-muted-foreground">Cobrado</p>
+                    <p className="numeric p-3 pt-1 font-semibold text-emerald-700">{formatMoney(currentPaid)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Saldo</p>
-                    <p className={`font-semibold ${currentBalance > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                    <p className="p-3 pb-0 text-xs text-muted-foreground">Saldo</p>
+                    <p className={`numeric p-3 pt-1 font-bold ${currentBalance > 0 ? 'text-red-700' : 'text-emerald-700'}`}>
                       {formatMoney(currentBalance)}
                     </p>
                   </div>
@@ -301,20 +304,26 @@ export function OrderDetailModal({
                 <form onSubmit={handlePaymentSubmit} className="space-y-3 pt-4 border-t border-border">
                   <h3 className="font-semibold text-foreground">Registrar nuevo pago</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <label className="text-sm font-medium">
+                    <span className="mb-1.5 block">Monto (Bs)</span>
                     <input
                       type="number"
+                      inputMode="decimal"
                       placeholder="Monto"
                       value={paymentForm.amount}
                       onChange={(event) => setPaymentForm({ ...paymentForm, amount: event.target.value })}
-                      className="px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="field-control"
                       required
                       min="0.01"
                       step="0.01"
                     />
+                    </label>
+                    <label className="text-sm font-medium">
+                    <span className="mb-1.5 block">Método de pago</span>
                     <select
                       value={paymentForm.payment_method_id}
                       onChange={(event) => handlePaymentMethodChange(event.target.value)}
-                      className="px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="field-control"
                       required
                     >
                       <option value="">Método de pago</option>
@@ -322,20 +331,27 @@ export function OrderDetailModal({
                         <option key={method.id} value={method.id}>{method.name}</option>
                       ))}
                     </select>
+                    </label>
+                    <label className="text-sm font-medium">
+                    <span className="mb-1.5 block">Fecha</span>
                     <input
                       type="date"
                       value={paymentForm.paid_at}
                       onChange={(event) => setPaymentForm({ ...paymentForm, paid_at: event.target.value })}
-                      className="px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="field-control"
                       required
                     />
+                    </label>
+                    <label className="text-sm font-medium">
+                    <span className="mb-1.5 block">Nota <span className="font-normal text-muted-foreground">(opcional)</span></span>
                     <input
                       type="text"
                       placeholder="Notas del pago"
                       value={paymentForm.notes}
                       onChange={(event) => setPaymentForm({ ...paymentForm, notes: event.target.value })}
-                      className="px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="field-control"
                     />
+                    </label>
                   </div>
                   <div className="rounded-lg border border-border bg-muted/50 p-3 text-sm flex justify-between">
                     <span className="text-muted-foreground">Nuevo saldo estimado</span>

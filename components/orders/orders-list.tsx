@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { DollarSign, Eye } from 'lucide-react'
+import { ClipboardList, DollarSign, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import type { OrderWithFinancials } from '@/lib/data/queries'
 import type { CatalogOption, PaymentMethodOption } from '@/lib/orders/types'
 import {
@@ -42,76 +43,73 @@ export function OrdersList({
 
   if (orders.length === 0) {
     return (
-      <div className="p-6 text-center text-muted-foreground">
-        <p>No hay pedidos disponibles</p>
-      </div>
+      <EmptyState
+        icon={ClipboardList}
+        title="No hay pedidos para mostrar."
+        description="Prueba otro término de búsqueda o cambia el filtro de estado."
+      />
     )
   }
 
   return (
-    <div className="overflow-x-auto">
-      <div className="hidden md:grid grid-cols-8 gap-4 p-4 md:p-6 bg-muted/50 border-b border-border font-semibold text-sm text-foreground">
+    <div>
+      <div className="hidden grid-cols-[1fr_1.35fr_.9fr_.8fr_.8fr_.8fr_.8fr_.9fr] gap-3 border-b border-border bg-muted/55 px-4 py-3 text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground lg:grid">
         <div>Solicitud</div>
         <div>Cliente</div>
         <div>Deporte</div>
-        <div>Total</div>
-        <div>Saldo</div>
+        <div className="text-right">Total</div>
+        <div className="text-right">Cobrado</div>
+        <div className="text-right">Saldo</div>
         <div>Entrega</div>
         <div>Estado</div>
-        <div>Acciones</div>
       </div>
 
       <div className="divide-y divide-border">
         {orders.map((order) => (
           <div key={order.id}>
-            <div className="md:hidden p-4 space-y-2">
+            <div className="p-4 lg:hidden">
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">Solicitud {displayRequestNumber(order.request_number)}</p>
-                  <p className="font-semibold text-foreground">{order.customer_name}</p>
-                  <p className="text-xs text-muted-foreground">{order.sport_name}</p>
+                <div className="min-w-0">
+                  <p className="eyebrow truncate">Solicitud {displayRequestNumber(order.request_number)}</p>
+                  <p className="mt-1 truncate font-semibold text-foreground">{order.customer_name}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{order.sport_name} · {deliveryTypeLabels[normalizeDeliveryType(order.delivery_type)]}</p>
                 </div>
-                <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[normalizeOrderStatus(order.status)]}`}>
+                <span className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold ${statusColors[normalizeOrderStatus(order.status)]}`}>
                   {statusLabels[normalizeOrderStatus(order.status)]}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <div>
-                  <p className="text-muted-foreground">Total: <span className="font-semibold text-foreground">{formatMoney(order.total_amount)}</span></p>
-                  <p className="text-muted-foreground">Saldo: <span className={`font-semibold ${order.balance_amount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>{formatMoney(order.balance_amount)}</span></p>
-                </div>
+              <div className="mt-3 grid grid-cols-3 gap-2 border-y border-border py-3 text-xs">
+                <div><p className="text-muted-foreground">Total</p><p className="numeric mt-1 font-semibold">{formatMoney(order.total_amount)}</p></div>
+                <div><p className="text-muted-foreground">Cobrado</p><p className="numeric mt-1 font-semibold text-emerald-700">{formatMoney(order.paid_amount)}</p></div>
+                <div><p className="text-muted-foreground">Saldo</p><p className={`numeric mt-1 font-bold ${order.balance_amount > 0 ? 'text-red-700' : 'text-emerald-700'}`}>{formatMoney(order.balance_amount)}</p></div>
               </div>
 
-              <div className="flex gap-2 pt-2">
-                <Button variant="outline" size="sm" onClick={() => setDetailState({ order, tab: 'info' })} className="flex-1">
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <Button variant="outline" onClick={() => setDetailState({ order, tab: 'info' })}>
                   <Eye size={16} className="mr-1" />
-                  Ver
+                  Ver detalle
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setDetailState({ order, tab: 'payments' })} className="flex-1">
+                <Button variant="outline" onClick={() => setDetailState({ order, tab: 'payments' })}>
                   <DollarSign size={16} className="mr-1" />
-                  Pago
+                  Registrar pago
                 </Button>
               </div>
             </div>
 
-            <div className="hidden md:grid grid-cols-8 gap-4 p-4 md:p-6 items-center hover:bg-muted/50 transition">
+            <div className="hidden grid-cols-[1fr_1.35fr_.9fr_.8fr_.8fr_.8fr_.8fr_.9fr] items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/35 lg:grid">
               <div className="font-semibold text-foreground">{displayRequestNumber(order.request_number)}</div>
-              <div className="font-semibold text-foreground">{order.customer_name}</div>
+              <button className="truncate text-left font-semibold text-foreground hover:underline" type="button" onClick={() => setDetailState({ order, tab: 'info' })}>{order.customer_name}</button>
               <div className="text-sm text-muted-foreground">{order.sport_name}</div>
-              <div className="font-semibold text-foreground">{formatMoney(order.total_amount)}</div>
-              <div className={`font-semibold ${order.balance_amount > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>{formatMoney(order.balance_amount)}</div>
+              <div className="numeric text-right text-sm font-semibold text-foreground">{formatMoney(order.total_amount)}</div>
+              <div className="numeric text-right text-sm font-semibold text-emerald-700">{formatMoney(order.paid_amount)}</div>
+              <div className={`numeric text-right text-sm font-bold ${order.balance_amount > 0 ? 'text-destructive' : 'text-emerald-700'}`}>{formatMoney(order.balance_amount)}</div>
               <div className="text-sm text-muted-foreground">{deliveryTypeLabels[normalizeDeliveryType(order.delivery_type)]}</div>
-              <div>
-                <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[normalizeOrderStatus(order.status)]}`}>
+              <div className="flex items-center justify-between gap-1">
+                <span className={`rounded-md px-2 py-1 text-xs font-semibold ${statusColors[normalizeOrderStatus(order.status)]}`}>
                   {statusLabels[normalizeOrderStatus(order.status)]}
                 </span>
-              </div>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="sm" onClick={() => setDetailState({ order, tab: 'info' })} title="Ver detalles">
-                  <Eye size={16} />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => setDetailState({ order, tab: 'payments' })} title="Registrar pago">
+                <Button variant="ghost" size="icon-sm" onClick={() => setDetailState({ order, tab: 'payments' })} aria-label={`Registrar pago de ${order.customer_name}`} title="Registrar pago">
                   <DollarSign size={16} />
                 </Button>
               </div>

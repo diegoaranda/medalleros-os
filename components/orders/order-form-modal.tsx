@@ -90,202 +90,134 @@ export function OrderFormModal({ open, onOpenChange, sports, paymentMethods, def
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 flex items-end md:items-center justify-center p-4">
-      <div className="bg-card rounded-t-lg md:rounded-lg border border-border w-full md:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-card border-b border-border p-4 md:p-6 flex items-center justify-between">
-          <h2 className="text-xl md:text-2xl font-bold">{isEditing ? 'Editar pedido' : 'Nuevo pedido'}</h2>
-          <button onClick={() => onOpenChange(false)} className="p-2 hover:bg-muted rounded-lg transition" type="button">
-            <X size={24} />
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="order-form-title"
+        className="flex h-[100dvh] w-full flex-col overflow-hidden bg-card sm:h-auto sm:max-h-[92dvh] sm:max-w-2xl sm:rounded-xl sm:border sm:border-border"
+      >
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] sm:px-6 sm:py-4">
+          <div>
+            <p className="eyebrow mb-1">{isEditing ? 'Datos del pedido' : 'Registro rápido'}</p>
+            <h2 id="order-form-title" className="text-xl font-bold tracking-[-0.025em]">{isEditing ? 'Editar pedido' : 'Nuevo pedido'}</h2>
+          </div>
+          <button onClick={() => onOpenChange(false)} className="flex size-11 items-center justify-center rounded-lg hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" type="button" aria-label="Cerrar formulario">
+            <X size={22} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
-          <div className="space-y-3">
-            <h3 className="font-semibold text-foreground">Información del Cliente</h3>
-            <div>
-              <label className="text-sm text-muted-foreground">N.º de solicitud</label>
-              <input
-                type="text"
-                placeholder="Ej. SOL-1024"
-                value={formData.request_number}
-                onChange={(event) => setFormData({ ...formData, request_number: event.target.value })}
-                className="mt-1 w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                required
-              />
-            </div>
-            <input
-              type="text"
-              placeholder="Nombre del cliente"
-              value={formData.customer_name}
-              onChange={(event) => setFormData({ ...formData, customer_name: event.target.value })}
-              className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              required
-            />
-            <input
-              type="tel"
-              placeholder="WhatsApp o teléfono"
-              value={formData.customer_phone}
-              onChange={(event) => setFormData({ ...formData, customer_phone: event.target.value })}
-              className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              required
-            />
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="font-semibold text-foreground">Detalles del pedido</h3>
-            <div className="grid grid-cols-1 gap-3">
-              <select
-                value={formData.sport_id}
-                onChange={(event) => handleSportChange(event.target.value)}
-                className="px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                required
-              >
-                <option value="">Selecciona deporte</option>
-                {sports.map((sport) => (
-                  <option key={sport.id} value={sport.id}>{sport.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="font-semibold text-foreground">Precios</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm text-muted-foreground">Precio de venta</label>
-                <input
-                  type="number"
-                  placeholder="0.00"
-                  value={formData.total_amount}
-                  onChange={(event) => setFormData({ ...formData, total_amount: event.target.value })}
-                  className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary mt-1"
-                  required
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-              <div>
-                <label className="text-sm text-muted-foreground">Saldo estimado</label>
-                <div className="w-full px-4 py-2 rounded-lg border border-border bg-muted/50 text-foreground mt-1 font-semibold">
-                  {formatMoney(balancePreview)}
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-5 sm:px-6">
+            <fieldset className="space-y-4">
+              <legend className="section-title mb-4">Cliente y pedido</legend>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="request-number" className="field-label">N.º de solicitud</label>
+                  <input id="request-number" type="text" placeholder="Ej. SOL-1024" value={formData.request_number} onChange={(event) => setFormData({ ...formData, request_number: event.target.value })} className="field-control" required autoFocus />
+                </div>
+                <div>
+                  <label htmlFor="customer-name" className="field-label">Nombre del cliente</label>
+                  <input id="customer-name" type="text" autoComplete="name" placeholder="Nombre completo" value={formData.customer_name} onChange={(event) => setFormData({ ...formData, customer_name: event.target.value })} className="field-control" required />
+                </div>
+                <div>
+                  <label htmlFor="customer-phone" className="field-label">WhatsApp</label>
+                  <input id="customer-phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="Ej. 70000000" value={formData.customer_phone} onChange={(event) => setFormData({ ...formData, customer_phone: event.target.value })} className="field-control" required />
+                </div>
+                <div>
+                  <label htmlFor="order-sport" className="field-label">Deporte</label>
+                  <select id="order-sport" value={formData.sport_id} onChange={(event) => handleSportChange(event.target.value)} className="field-control" required>
+                    <option value="">Selecciona un deporte</option>
+                    {sports.map((sport) => <option key={sport.id} value={sport.id}>{sport.name}</option>)}
+                  </select>
                 </div>
               </div>
-            </div>
-            <div>
-              <label className="text-sm text-muted-foreground">Gasto de producción</label>
-              <input
-                type="number"
-                placeholder="30.00"
-                value={formData.production_expense}
-                onChange={(event) => setFormData({ ...formData, production_expense: event.target.value })}
-                className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary mt-1"
-                required
-                min="0"
-                step="0.01"
-              />
-            </div>
+            </fieldset>
 
-            {!isEditing ? (
-              <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-3">
-                <h4 className="font-semibold text-sm text-foreground">Anticipo inicial</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <fieldset className="space-y-4 border-t border-border pt-5">
+              <legend className="section-title mb-4">Precio y anticipo</legend>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="total-amount" className="field-label">Precio total (Bs)</label>
+                  <input id="total-amount" type="number" inputMode="decimal" placeholder="0,00" value={formData.total_amount} onChange={(event) => setFormData({ ...formData, total_amount: event.target.value })} className="field-control numeric" required min="0" step="0.01" />
+                </div>
+                {!isEditing ? (
                   <div>
-                    <label className="text-sm text-muted-foreground">Monto del anticipo</label>
-                    <input
-                      type="number"
-                      placeholder="0.00"
-                      value={formData.initial_payment_amount}
-                      onChange={(event) => setFormData({ ...formData, initial_payment_amount: event.target.value })}
-                      className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary mt-1"
-                      min="0"
-                      step="0.01"
-                    />
+                    <label htmlFor="advance-amount" className="field-label">Anticipo (Bs)</label>
+                    <input id="advance-amount" type="number" inputMode="decimal" placeholder="0,00" value={formData.initial_payment_amount} onChange={(event) => setFormData({ ...formData, initial_payment_amount: event.target.value })} className="field-control numeric" min="0" step="0.01" />
                   </div>
+                ) : null}
+                {!isEditing ? (
                   <div>
-                    <label className="text-sm text-muted-foreground">Método de pago</label>
-                    <select
-                      value={formData.initial_payment_method_id}
-                      onChange={(event) => handleInitialPaymentMethodChange(event.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary mt-1"
-                      disabled={paymentMethods.length === 0}
-                    >
+                    <label htmlFor="advance-method" className="field-label">Método de pago</label>
+                    <select id="advance-method" value={formData.initial_payment_method_id} onChange={(event) => handleInitialPaymentMethodChange(event.target.value)} className="field-control" disabled={paymentMethods.length === 0}>
                       <option value="">Sin método</option>
-                      {paymentMethods.map((method) => (
-                        <option key={method.id} value={method.id}>{method.name}</option>
-                      ))}
+                      {paymentMethods.map((method) => <option key={method.id} value={method.id}>{method.name}</option>)}
                     </select>
                   </div>
+                ) : null}
+                <div>
+                  <span className="field-label">Saldo estimado</span>
+                  <div className={`numeric flex min-h-11 items-center rounded-lg border px-3.5 font-bold ${balancePreview > 0 ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`} aria-live="polite">
+                    {formatMoney(balancePreview)}
+                  </div>
                 </div>
-                <input
-                  type="text"
-                  placeholder="Nota opcional del pago"
-                  value={formData.initial_payment_notes}
-                  onChange={(event) => setFormData({ ...formData, initial_payment_notes: event.target.value })}
-                  className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                />
               </div>
-            ) : null}
-
-            <p className="text-xs text-muted-foreground">El saldo se calcula automáticamente desde los pagos registrados.</p>
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="font-semibold text-foreground">Entrega</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <select
-                value={formData.delivery_type}
-                onChange={(event) => {
-                  const deliveryType = event.target.value as OrderFormValues['delivery_type']
-                  setFormData({
-                    ...formData,
-                    delivery_type: deliveryType,
-                    destination: deliveryType === 'envio' ? '' : 'Santa Cruz',
-                  })
-                }}
-                className="px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                required
-              >
-                {operationalDeliveryTypes.map((type) => (
-                  <option key={type} value={type}>{deliveryTypeLabels[type]}</option>
-                ))}
-              </select>
-              {formData.delivery_type === 'envio' ? (
-                <DestinationCombobox
-                  value={formData.destination}
-                  onChange={(destination) => setFormData({ ...formData, destination })}
-                />
+              {!isEditing ? (
+                <div>
+                  <label htmlFor="advance-note" className="field-label">Nota del anticipo <span className="font-normal text-muted-foreground">(opcional)</span></label>
+                  <input id="advance-note" type="text" value={formData.initial_payment_notes} onChange={(event) => setFormData({ ...formData, initial_payment_notes: event.target.value })} className="field-control" placeholder="Ej. comprobante enviado por WhatsApp" />
+                </div>
               ) : null}
-            </div>
-            {formData.delivery_type === 'local' ? (
-              <p className="text-xs text-muted-foreground">Recoge en casa · Santa Cruz</p>
-            ) : null}
-            <input
-              type="date"
-              value={formData.due_date}
-              onChange={(event) => setFormData({ ...formData, due_date: event.target.value })}
-              className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            </fieldset>
+
+            <fieldset className="space-y-4 border-t border-border pt-5">
+              <legend className="section-title mb-4">Entrega</legend>
+              <div>
+                <span className="field-label">Tipo de entrega</span>
+                <div className="grid grid-cols-2 rounded-lg border border-input bg-muted p-1" role="group" aria-label="Tipo de entrega">
+                  {operationalDeliveryTypes.map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, delivery_type: type, destination: type === 'envio' ? '' : 'Santa Cruz' })}
+                      className={`min-h-10 rounded-md px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${formData.delivery_type === type ? 'bg-black text-white' : 'text-muted-foreground hover:text-foreground'}`}
+                      aria-pressed={formData.delivery_type === type}
+                    >
+                      {deliveryTypeLabels[type]}
+                    </button>
+                  ))}
+                </div>
+                {formData.delivery_type === 'local' ? <p className="field-help">Recoge en casa · Santa Cruz</p> : null}
+              </div>
+              {formData.delivery_type === 'envio' ? <DestinationCombobox value={formData.destination} onChange={(destination) => setFormData({ ...formData, destination })} /> : null}
+              <div>
+                <label htmlFor="due-date" className="field-label">Fecha de compromiso</label>
+                <input id="due-date" type="date" value={formData.due_date} onChange={(event) => setFormData({ ...formData, due_date: event.target.value })} className="field-control" />
+              </div>
+            </fieldset>
+
+            <fieldset className="space-y-4 border-t border-border pt-5">
+              <legend className="section-title mb-4">Información interna</legend>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="production-expense" className="field-label">Gasto de producción (Bs)</label>
+                  <input id="production-expense" type="number" inputMode="decimal" placeholder="30,00" value={formData.production_expense} onChange={(event) => setFormData({ ...formData, production_expense: event.target.value })} className="field-control numeric" required min="0" step="0.01" />
+                </div>
+                <div>
+                  <label htmlFor="order-notes" className="field-label">Notas <span className="font-normal text-muted-foreground">(opcional)</span></label>
+                  <textarea id="order-notes" value={formData.notes} onChange={(event) => setFormData({ ...formData, notes: event.target.value })} placeholder="Medidas, color, detalles…" className="field-control min-h-24 resize-y py-3" rows={3} />
+                </div>
+              </div>
+            </fieldset>
+
+            {error ? <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">{error}</p> : null}
           </div>
 
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-foreground">Notas adicionales</label>
-            <textarea
-              value={formData.notes}
-              onChange={(event) => setFormData({ ...formData, notes: event.target.value })}
-              placeholder="Agregar notas o especificaciones..."
-              className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-              rows={3}
-            />
-          </div>
-
-          {error ? <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p> : null}
-
-          <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1" disabled={isPending}>
-              Cancelar
-            </Button>
-            <Button type="submit" className="flex-1" disabled={isPending}>
-              {isPending ? 'Guardando...' : isEditing ? 'Guardar Cambios' : 'Crear Pedido'}
+          <div className="grid shrink-0 grid-cols-[0.8fr_1.2fr] gap-3 border-t border-border bg-card px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:px-6 sm:pb-4">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>Cancelar</Button>
+            <Button type="submit" disabled={isPending} aria-busy={isPending}>
+              {isPending ? 'Guardando…' : isEditing ? 'Guardar cambios' : 'Crear pedido'}
             </Button>
           </div>
         </form>

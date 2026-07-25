@@ -6,21 +6,21 @@ interface DashboardCardProps {
 }
 
 const accentColors = {
-  blue: 'bg-slate-100 text-slate-800 dark:bg-slate-800/30 dark:text-slate-200',
-  purple: 'bg-slate-200 text-slate-800 dark:bg-slate-700/30 dark:text-slate-200',
-  orange: 'bg-slate-100 text-slate-800 dark:bg-slate-800/30 dark:text-slate-200',
-  green: 'bg-slate-100 text-slate-800 dark:bg-slate-800/30 dark:text-slate-200',
-  red: 'bg-slate-100 text-slate-800 dark:bg-slate-800/30 dark:text-slate-200',
+  blue: 'text-slate-800',
+  purple: 'text-violet-700',
+  orange: 'text-amber-700',
+  green: 'text-emerald-700',
+  red: 'text-red-700',
 }
 
 export function DashboardCard({ title, value, subtitle, accent = 'blue' }: DashboardCardProps) {
   return (
-    <div className="bg-card rounded-lg border border-border p-4 md:p-6">
-      <p className="text-sm text-muted-foreground font-medium">{title}</p>
-      <div className={`mt-3 inline-block rounded-lg px-4 py-2 ${accentColors[accent]}`}>
-        <p className="text-2xl md:text-3xl font-bold">{value}</p>
-      </div>
-      {subtitle && <p className="text-xs text-muted-foreground mt-3">{subtitle}</p>}
+    <div className="min-w-0 p-4 sm:p-5">
+      <p className="text-xs font-medium leading-4 text-muted-foreground">{title}</p>
+      <p className={`numeric mt-2 break-words text-2xl font-bold leading-none tracking-[-0.035em] sm:text-[1.75rem] ${accentColors[accent]}`}>
+        {value}
+      </p>
+      {subtitle && <p className="mt-2 text-xs leading-4 text-muted-foreground">{subtitle}</p>}
     </div>
   )
 }

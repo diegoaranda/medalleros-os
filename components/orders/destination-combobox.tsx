@@ -51,17 +51,19 @@ type DestinationComboboxProps = {
 
 export function DestinationCombobox({ value, onChange }: DestinationComboboxProps) {
   const listId = useId()
+  const inputId = useId()
 
   return (
     <div>
-      <label className="text-sm text-muted-foreground">Destino</label>
+      <label htmlFor={inputId} className="field-label">Destino del envío</label>
       <input
+        id={inputId}
         type="text"
         list={listId}
         placeholder="Buscar ciudad, departamento o localidad"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1 w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+        className="field-control"
         autoComplete="off"
         required
       />
@@ -70,8 +72,8 @@ export function DestinationCombobox({ value, onChange }: DestinationComboboxProp
           <option key={destination} value={destination} />
         ))}
       </datalist>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Selecciona una sugerencia o usa “Otro destino” escribiendo el texto libremente.
+      <p className="field-help">
+        Selecciona una sugerencia o escribe otra localidad.
       </p>
     </div>
   )
