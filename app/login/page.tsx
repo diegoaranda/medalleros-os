@@ -24,46 +24,52 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-4">
+    <main className="min-h-dvh bg-black px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))] text-white">
+      <div className="mx-auto flex min-h-[calc(100dvh-3rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-full max-w-sm flex-col justify-center">
         <div className="mb-8">
-          <BrandLogo className="w-full" priority />
-          <p className="mt-2 text-sm text-muted-foreground">Ingresa para gestionar pedidos, producción y finanzas.</p>
+          <BrandLogo className="w-64 max-w-full" priority />
+          <p className="mt-3 max-w-xs text-sm leading-5 text-white/55">Pedidos, producción y finanzas en un solo lugar.</p>
         </div>
 
-        <form action={signInWithPassword} className="rounded-lg border border-border bg-card p-5">
+        <form action={signInWithPassword} className="rounded-xl bg-white p-5 text-black sm:p-6">
           <input type="hidden" name="next" value={next} />
+          <div className="mb-5">
+            <h1 className="text-xl font-bold tracking-[-0.025em]">Iniciar sesión</h1>
+            <p className="mt-1 text-sm text-neutral-500">Ingresa con tu cuenta de Medalleros.</p>
+          </div>
           <div className="flex flex-col gap-4">
-            <label className="flex flex-col gap-2 text-sm font-medium">
-              Email
+            <label className="text-sm font-medium">
+              <span className="mb-1.5 block">Correo electrónico</span>
               <input
                 name="email"
                 type="email"
                 autoComplete="email"
+                inputMode="email"
                 required
-                className="rounded-lg border border-border bg-background px-3 py-2 text-foreground outline-none transition focus:ring-2 focus:ring-ring"
+                className="min-h-12 w-full rounded-lg border border-neutral-300 bg-white px-3.5 text-base outline-none transition placeholder:text-neutral-400 hover:border-neutral-400 focus:border-black focus:ring-3 focus:ring-black/10"
               />
             </label>
-            <label className="flex flex-col gap-2 text-sm font-medium">
-              Contraseña
+            <label className="text-sm font-medium">
+              <span className="mb-1.5 block">Contraseña</span>
               <input
                 name="password"
                 type="password"
                 autoComplete="current-password"
                 required
-                className="rounded-lg border border-border bg-background px-3 py-2 text-foreground outline-none transition focus:ring-2 focus:ring-ring"
+                className="min-h-12 w-full rounded-lg border border-neutral-300 bg-white px-3.5 text-base outline-none transition hover:border-neutral-400 focus:border-black focus:ring-3 focus:ring-black/10"
               />
             </label>
             {params.error ? (
-              <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm leading-5 text-red-700">
                 {params.error}
               </p>
             ) : null}
-            <Button type="submit" size="lg" className="w-full">
+            <Button type="submit" size="lg" className="mt-1 w-full bg-black text-white hover:bg-neutral-800">
               Entrar
             </Button>
           </div>
         </form>
+        <p className="mt-5 text-center text-xs text-white/35">Uso interno · Medalleros SC</p>
       </div>
     </main>
   )
