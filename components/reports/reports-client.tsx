@@ -13,6 +13,7 @@ import {
   SlidersHorizontal,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
 import { ReportChart } from '@/components/reports/report-chart'
 import type { OrderWithFinancials } from '@/lib/data/queries'
 import { calculateOrderFinancials } from '@/lib/finance/calculations'
@@ -51,22 +52,21 @@ type MetricCardProps = {
 }
 
 const toneClasses: Record<MetricTone, string> = {
-  slate: 'border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-800 dark:bg-slate-900/30 dark:text-slate-100',
-  green: 'border-emerald-200 bg-emerald-50/70 text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-100',
-  amber: 'border-amber-200 bg-amber-50/70 text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-100',
-  purple: 'border-violet-200 bg-violet-50/70 text-violet-950 dark:border-violet-900/50 dark:bg-violet-950/20 dark:text-violet-100',
-  red: 'border-rose-200 bg-rose-50/70 text-rose-950 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-100',
+  slate: 'text-slate-950',
+  green: 'text-emerald-700',
+  amber: 'text-amber-700',
+  purple: 'text-violet-700',
+  red: 'text-red-700',
 }
 
-const inputClasses =
-  'w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary'
+const inputClasses = 'field-control'
 
 function MetricCard({ label, value, tone = 'slate', helper }: MetricCardProps) {
   return (
-    <div className={`rounded-xl border p-4 ${toneClasses[tone]}`}>
-      <p className="text-xs font-semibold uppercase tracking-wide opacity-70">{label}</p>
-      <p className="mt-2 text-2xl font-bold tabular-nums">{value}</p>
-      {helper ? <p className="mt-1 text-xs opacity-65">{helper}</p> : null}
+    <div className="min-w-0 p-4 sm:p-5">
+      <p className="text-xs font-medium leading-4 text-muted-foreground">{label}</p>
+      <p className={`numeric mt-2 break-words text-xl font-bold leading-tight tracking-[-0.03em] sm:text-2xl ${toneClasses[tone]}`}>{value}</p>
+      {helper ? <p className="mt-1 text-xs leading-4 text-muted-foreground">{helper}</p> : null}
     </div>
   )
 }
@@ -88,31 +88,31 @@ function SavingsDistribution({ savings, household }: { savings: number; househol
   const distributable = savings + household
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 md:p-6">
+    <div className="surface overflow-hidden">
       <div className="flex items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">Solo se distribuyen pedidos con ganancia positiva.</p>
-        <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+        <p className="p-4 text-sm text-muted-foreground sm:p-5">Solo se distribuyen pedidos con ganancia positiva.</p>
+        <span className="numeric mr-4 rounded-md bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
           {formatMoney(distributable)}
         </span>
       </div>
 
-      <div className="mt-5 flex h-4 overflow-hidden rounded-full bg-muted">
+      <div className="mx-4 flex h-2 overflow-hidden rounded-full bg-muted sm:mx-5">
         {distributable > 0 ? (
           <>
-            <div className="w-[30%] bg-emerald-400/70 dark:bg-emerald-500/60" title="Ahorro 30%" />
-            <div className="w-[70%] bg-slate-400/70 dark:bg-slate-500/70" title="Casa 70%" />
+            <div className="w-[30%] bg-emerald-500" title="Ahorro 30%" />
+            <div className="w-[70%] bg-slate-400" title="Casa 70%" />
           </>
         ) : null}
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-lg bg-emerald-50 p-3 dark:bg-emerald-950/20">
-          <p className="text-xs font-medium text-emerald-800 dark:text-emerald-300">Ahorro 30%</p>
-          <p className="mt-1 font-bold text-emerald-950 dark:text-emerald-100">{formatMoney(savings)}</p>
+      <div className="mt-4 grid grid-cols-2 divide-x divide-border border-t border-border">
+        <div className="p-4 sm:p-5">
+          <p className="text-xs font-medium text-emerald-700">Ahorro 30%</p>
+          <p className="numeric mt-1 font-bold text-emerald-700">{formatMoney(savings)}</p>
         </div>
-        <div className="rounded-lg bg-slate-100 p-3 dark:bg-slate-900/50">
-          <p className="text-xs font-medium text-slate-600 dark:text-slate-300">Casa 70%</p>
-          <p className="mt-1 font-bold text-slate-950 dark:text-slate-100">{formatMoney(household)}</p>
+        <div className="p-4 sm:p-5">
+          <p className="text-xs font-medium text-slate-600">Casa 70%</p>
+          <p className="numeric mt-1 font-bold text-slate-950">{formatMoney(household)}</p>
         </div>
       </div>
     </div>
@@ -261,12 +261,9 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
   const netProfitTone: MetricTone = metrics.netProfit < 0 ? 'red' : 'green'
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-4 md:p-6">
+    <div className="app-page space-y-8">
       <section className="space-y-5">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Reportes</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Analiza solicitudes, resultados y distribución de ganancias.</p>
-        </div>
+        <PageHeader title="Reportes" eyebrow="Análisis" description="Filtra el período o una solicitud y revisa el resultado financiero." />
 
         {error ? (
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
@@ -274,7 +271,7 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
           </div>
         ) : null}
 
-        <div className="rounded-xl border border-border bg-card p-4 md:p-5">
+        <div className="surface p-4 sm:p-5">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <SlidersHorizontal size={18} className="text-muted-foreground" />
@@ -284,7 +281,6 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
                 onClick={handleExport}
                 disabled={exportState === 'exporting'}
                 aria-live="polite"
@@ -301,7 +297,7 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
                       ? 'Error al exportar'
                       : 'Exportar Excel'}
               </Button>
-              <Button type="button" variant="outline" size="sm" onClick={resetFilters}>
+              <Button type="button" variant="outline" onClick={resetFilters}>
                 <RotateCcw size={15} className="mr-2" />
                 Limpiar filtros
               </Button>
@@ -316,7 +312,8 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
                   setPeriod(item)
                   setExportState('idle')
                 }}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                aria-pressed={period === item}
+                className={`min-h-10 rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   period === item
                     ? 'bg-foreground text-background'
                     : 'bg-muted text-foreground hover:bg-muted/80'
@@ -448,14 +445,15 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
           <h2 className="text-xl font-bold text-foreground">Resumen principal</h2>
           <p className="mt-1 text-sm text-muted-foreground">Resultado financiero del período seleccionado.</p>
         </div>
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="space-y-4">
+          <div className="surface grid grid-cols-2 divide-x divide-y divide-border overflow-hidden lg:grid-cols-5 lg:divide-y-0">
             <MetricCard label="Total vendido" value={formatMoney(metrics.sold)} tone="slate" />
+            <MetricCard label="Total cobrado" value={formatMoney(metrics.collected)} tone="green" />
             <MetricCard label="Costo Eugenio" value={formatMoney(metrics.productionCosts)} tone="amber" />
             <MetricCard label="Ganancia neta" value={formatMoney(metrics.netProfit)} tone={netProfitTone} />
             <MetricCard label="Pendiente" value={formatMoney(metrics.pending)} tone="red" />
           </div>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="surface grid grid-cols-2 divide-x divide-y divide-border overflow-hidden lg:grid-cols-4 lg:divide-y-0">
             <MetricCard label="Fondo de gastos de producción" value={formatMoney(metrics.productionExpenses)} tone="amber" />
             <MetricCard label="Gastos reales" value={formatMoney(metrics.actualExpenses)} tone="slate" helper="Gastos registrados en el período" />
             <MetricCard
@@ -465,7 +463,7 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
             />
             <MetricCard label="Diezmo" value={formatMoney(metrics.reserveAmount)} tone="purple" helper={`${reservePercentage}% de ganancia bruta positiva`} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="surface grid grid-cols-2 divide-x divide-border overflow-hidden">
             <MetricCard label="Ahorro 30%" value={formatMoney(metrics.savingsAmount)} tone="green" />
             <MetricCard label="Casa 70%" value={formatMoney(metrics.householdAmount)} tone="green" />
           </div>
