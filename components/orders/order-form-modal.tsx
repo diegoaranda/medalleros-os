@@ -181,7 +181,7 @@ export function OrderFormModal({ open, onOpenChange, sports, paymentMethods, def
                       key={type}
                       type="button"
                       onClick={() => setFormData({ ...formData, delivery_type: type, destination: type === 'envio' ? '' : 'Santa Cruz' })}
-                      className={`min-h-10 rounded-md px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${formData.delivery_type === type ? 'bg-black text-white' : 'text-muted-foreground hover:text-foreground'}`}
+                      className={`min-h-11 rounded-md px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${formData.delivery_type === type ? 'bg-black text-white' : 'text-muted-foreground hover:text-foreground'}`}
                       aria-pressed={formData.delivery_type === type}
                     >
                       {deliveryTypeLabels[type]}

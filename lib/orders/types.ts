@@ -66,12 +66,12 @@ export const deliveryTypes: DeliveryType[] = ['envio', 'recogida', 'local']
 export const operationalDeliveryTypes: DeliveryType[] = ['local', 'envio']
 
 export const statusColors: Record<OrderStatus, string> = {
-  nuevo: 'bg-slate-200 text-slate-800 dark:bg-slate-800/40 dark:text-slate-300',
-  diseno: 'bg-slate-300 text-slate-800 dark:bg-slate-700/40 dark:text-slate-200',
-  produccion: 'bg-slate-400 text-slate-900 dark:bg-slate-600/40 dark:text-slate-100',
-  listo: 'bg-slate-500 text-slate-50 dark:bg-slate-500/40 dark:text-slate-100',
-  entregado: 'bg-slate-600 text-slate-50 dark:bg-slate-500/30 dark:text-slate-200',
-  cancelado: 'bg-slate-300 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300',
+  nuevo: 'bg-amber-100 text-amber-800',
+  diseno: 'bg-amber-100 text-amber-800',
+  produccion: 'bg-amber-100 text-amber-800',
+  listo: 'bg-emerald-100 text-emerald-800',
+  entregado: 'bg-slate-200 text-slate-700',
+  cancelado: 'bg-red-100 text-red-700',
 }
 
 export function emptyOrderFormValues(): OrderFormValues {

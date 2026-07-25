@@ -71,7 +71,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         }`}
       >
         <div className="flex min-h-20 items-center justify-between border-b border-white/10 px-5 pt-[env(safe-area-inset-top)]">
-          <BrandLogo className="w-44" />
+          <BrandLogo className="w-44" priority />
           <button
             onClick={() => setSidebarOpen(false)}
             className="flex size-11 items-center justify-center rounded-lg text-white/75 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white md:hidden"

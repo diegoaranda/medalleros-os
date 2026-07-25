@@ -72,17 +72,17 @@ export function DeliveryPaymentModal({ order, paymentMethods, open, onOpenChange
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-end md:items-center justify-center p-4">
-      <div className="bg-card rounded-t-lg md:rounded-lg border border-border w-full md:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="border-b border-border p-4 md:p-6 flex items-center justify-between sticky top-0 bg-card">
-          <h2 className="text-xl md:text-2xl font-bold">Registrar pago</h2>
-          <button onClick={() => onOpenChange(false)} className="p-2 hover:bg-muted rounded-lg transition" type="button">
-            <X size={24} />
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="delivery-payment-title" className="max-h-[100dvh] w-full overflow-y-auto bg-card sm:max-w-lg sm:rounded-xl sm:border sm:border-border">
+        <div className="sticky top-0 flex items-center justify-between border-b border-border bg-card px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] sm:px-5 sm:py-4">
+          <h2 id="delivery-payment-title" className="text-xl font-bold tracking-[-0.025em]">Registrar pago</h2>
+          <button onClick={() => onOpenChange(false)} className="flex size-11 items-center justify-center rounded-lg hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" type="button" aria-label="Cerrar formulario">
+            <X size={22} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
-          <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+        <form onSubmit={handleSubmit} className="space-y-4 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-5">
+          <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-4">
             <p className="font-semibold text-foreground">{order.customer_name}</p>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -97,15 +97,17 @@ export function DeliveryPaymentModal({ order, paymentMethods, open, onOpenChange
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Monto a pagar</label>
+            <label htmlFor="delivery-payment-amount" className="field-label">Monto a pagar</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">Bs</span>
               <input
+                id="delivery-payment-amount"
                 type="number"
+                inputMode="decimal"
                 placeholder="0.00"
                 value={formData.amount}
                 onChange={(event) => setFormData({ ...formData, amount: event.target.value })}
-                className="w-full pl-11 pr-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                className="field-control numeric pl-11"
                 required
                 step="0.01"
                 min="0.01"
@@ -115,11 +117,12 @@ export function DeliveryPaymentModal({ order, paymentMethods, open, onOpenChange
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Método de pago</label>
+            <label htmlFor="delivery-payment-method" className="field-label">Método de pago</label>
             <select
+              id="delivery-payment-method"
               value={formData.payment_method_id}
               onChange={(event) => handlePaymentMethodChange(event.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="field-control"
               required
             >
               <option value="">Método de pago</option>
@@ -130,36 +133,38 @@ export function DeliveryPaymentModal({ order, paymentMethods, open, onOpenChange
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Fecha de pago</label>
+            <label htmlFor="delivery-payment-date" className="field-label">Fecha de pago</label>
             <input
+              id="delivery-payment-date"
               type="date"
               value={formData.paid_at}
               onChange={(event) => setFormData({ ...formData, paid_at: event.target.value })}
-              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="field-control"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Notas (opcional)</label>
+            <label htmlFor="delivery-payment-notes" className="field-label">Notas <span className="font-normal text-muted-foreground">(opcional)</span></label>
             <textarea
+              id="delivery-payment-notes"
               value={formData.notes}
               onChange={(event) => setFormData({ ...formData, notes: event.target.value })}
               placeholder="Agregar notas sobre el pago..."
-              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              className="field-control min-h-24 resize-y py-3"
               rows={3}
             />
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 rounded-lg p-4">
+          <div className="rounded-lg border border-border bg-muted/40 p-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Pago</p>
-                <p className="font-bold text-green-600 dark:text-green-400">+{formatMoney(amount)}</p>
+                <p className="numeric font-bold text-emerald-700">+{formatMoney(amount)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Nuevo saldo</p>
-                <p className={`font-bold ${remainingBalance > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                <p className={`numeric font-bold ${remainingBalance > 0 ? 'text-red-700' : 'text-emerald-700'}`}>
                   {formatMoney(remainingBalance)}
                 </p>
               </div>
@@ -169,7 +174,7 @@ export function DeliveryPaymentModal({ order, paymentMethods, open, onOpenChange
           {paymentExceedsBalance ? (
             <p className="text-sm text-destructive">El pago supera el saldo pendiente del pedido.</p>
           ) : null}
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1" disabled={isPending}>Cancelar</Button>

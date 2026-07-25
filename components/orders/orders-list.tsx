@@ -109,7 +109,7 @@ export function OrdersList({
                 <span className={`rounded-md px-2 py-1 text-xs font-semibold ${statusColors[normalizeOrderStatus(order.status)]}`}>
                   {statusLabels[normalizeOrderStatus(order.status)]}
                 </span>
-                <Button variant="ghost" size="icon-sm" onClick={() => setDetailState({ order, tab: 'payments' })} aria-label={`Registrar pago de ${order.customer_name}`} title="Registrar pago">
+                <Button variant="ghost" size="icon" onClick={() => setDetailState({ order, tab: 'payments' })} aria-label={`Registrar pago de ${order.customer_name}`} title="Registrar pago">
                   <DollarSign size={16} />
                 </Button>
               </div>

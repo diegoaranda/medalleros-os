@@ -22,19 +22,19 @@ export function DeliveryDetailModal({ order, open, onOpenChange }: DeliveryDetai
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-end md:items-center justify-center p-4">
-      <div className="bg-card rounded-t-lg md:rounded-lg border border-border w-full md:max-w-xl max-h-[90vh] overflow-y-auto">
-        <div className="border-b border-border p-4 md:p-6 flex items-center justify-between sticky top-0 bg-card">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="delivery-detail-title" className="max-h-[100dvh] w-full overflow-y-auto bg-card sm:max-w-xl sm:rounded-xl sm:border sm:border-border">
+        <div className="sticky top-0 flex items-center justify-between border-b border-border bg-card px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] sm:px-5 sm:py-4">
           <div>
-            <h2 className="text-xl md:text-2xl font-bold">{order.customer_name}</h2>
+            <h2 id="delivery-detail-title" className="text-xl font-bold tracking-[-0.025em]">{order.customer_name}</h2>
             <p className="text-sm text-muted-foreground mt-1">Solicitud {order.request_number} · {order.customer_phone}</p>
           </div>
-          <button onClick={() => onOpenChange(false)} className="p-2 hover:bg-muted rounded-lg transition" type="button">
-            <X size={24} />
+          <button onClick={() => onOpenChange(false)} className="flex size-11 items-center justify-center rounded-lg hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" type="button" aria-label="Cerrar detalle">
+            <X size={22} />
           </button>
         </div>
 
-        <div className="p-4 md:p-6 space-y-5">
+        <div className="space-y-5 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-5">
           <span className={`px-3 py-1 rounded-full text-sm font-semibold ${statusColors[normalizeOrderStatus(order.status)]}`}>{statusLabels[normalizeOrderStatus(order.status)]}</span>
 
           <div className="grid grid-cols-2 gap-4">
