@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
+import { PageHeader } from '@/components/ui/page-header'
+import { EmptyState } from '@/components/ui/empty-state'
 import type { OrderWithFinancials } from '@/lib/data/queries'
 import { ProductionCard } from './production-card'
 
@@ -20,40 +22,40 @@ export function ProductionClient({ productionOrders, reservePercentage, error }:
   )
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Producción</h1>
-        <p className="text-sm text-muted-foreground mt-1">Gestiona el flujo de producción con Eugenio</p>
-      </div>
+    <div className="app-page">
+      <PageHeader title="Producción" eyebrow="Cola operativa" description="Costos y pedidos activos con Eugenio" />
 
-      {error ? <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">{error}</div> : null}
+      {error ? <div role="alert" className="mb-5 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">{error}</div> : null}
 
-      <div className="relative mt-6">
+      <div className="relative mb-6">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+        <label htmlFor="production-search" className="sr-only">Filtrar producción por número de solicitud</label>
         <input
+          id="production-search"
           type="text"
           value={requestFilter}
           onChange={(event) => setRequestFilter(event.target.value)}
           placeholder="Filtrar por N.º de solicitud"
-          className="w-full pl-11 pr-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          className="field-control pl-11"
         />
       </div>
 
-      <div className="mt-8">
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-400 dark:bg-slate-600/40 text-slate-900 dark:text-slate-100 font-bold text-sm">1</div>
-            <h2 className="text-xl font-bold text-foreground">En Producción</h2>
-            <span className="ml-auto bg-slate-300 dark:bg-slate-700/40 text-slate-800 dark:text-slate-200 px-3 py-1 rounded-full text-sm font-semibold">{filteredProductionOrders.length}</span>
+      <section aria-labelledby="production-title">
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h2 id="production-title" className="section-title">En producción</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Completa la información pendiente antes de marcar listo.</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredProductionOrders.length > 0 ? filteredProductionOrders.map((order) => <ProductionCard key={order.id} order={order} reservePercentage={reservePercentage} />) : (
-              <div className="col-span-full text-center py-8 text-muted-foreground">No hay pedidos en producción</div>
-            )}
-          </div>
+          <span className="numeric rounded-md bg-amber-100 px-2.5 py-1 text-sm font-bold text-amber-800" aria-label={`${filteredProductionOrders.length} pedidos`}>
+            {filteredProductionOrders.length}
+          </span>
         </div>
-      </div>
+        <div className="surface divide-y divide-border overflow-hidden">
+          {filteredProductionOrders.length > 0 ? filteredProductionOrders.map((order) => <ProductionCard key={order.id} order={order} reservePercentage={reservePercentage} />) : (
+            <EmptyState title="No hay pedidos en producción." description="Los pedidos nuevos aparecerán aquí automáticamente." />
+          )}
+        </div>
+      </section>
     </div>
   )
 }
