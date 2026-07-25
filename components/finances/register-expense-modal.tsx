@@ -69,45 +69,45 @@ export function RegisterExpenseModal({ open, onOpenChange, categories }: Registe
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-end md:items-center justify-center p-4">
-      <div className="bg-card rounded-t-lg md:rounded-lg border border-border w-full md:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="border-b border-border p-4 md:p-6 flex items-center justify-between sticky top-0 bg-card">
-          <h2 className="text-xl md:text-2xl font-bold">Registrar Gasto</h2>
-          <button onClick={() => onOpenChange(false)} className="p-2 hover:bg-muted rounded-lg transition" type="button"><X size={24} /></button>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="expense-modal-title" className="max-h-[100dvh] w-full overflow-y-auto bg-card sm:max-w-lg sm:rounded-xl sm:border sm:border-border">
+        <div className="sticky top-0 flex items-center justify-between border-b border-border bg-card px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] sm:px-5 sm:py-4">
+          <h2 id="expense-modal-title" className="text-xl font-bold tracking-[-0.025em]">Registrar gasto</h2>
+          <button onClick={() => onOpenChange(false)} className="flex size-11 items-center justify-center rounded-lg hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" type="button" aria-label="Cerrar formulario"><X size={22} /></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-5">
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Categoría</label>
-            <select value={formData.category_id} onChange={(event) => handleCategoryChange(event.target.value)} className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary" required>
+            <label htmlFor="expense-category" className="field-label">Categoría</label>
+            <select id="expense-category" value={formData.category_id} onChange={(event) => handleCategoryChange(event.target.value)} className="field-control" required>
               <option value="">Selecciona una categoría</option>
               {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Monto</label>
+            <label htmlFor="expense-amount" className="field-label">Monto</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">Bs</span>
-              <input type="number" placeholder="0.00" value={formData.amount} onChange={(event) => setFormData({ ...formData, amount: event.target.value })} className="w-full pl-11 pr-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" required step="0.01" min="0.01" />
+              <input id="expense-amount" type="number" inputMode="decimal" placeholder="0,00" value={formData.amount} onChange={(event) => setFormData({ ...formData, amount: event.target.value })} className="field-control numeric pl-11" required step="0.01" min="0.01" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Fecha</label>
-            <input type="date" value={formData.expense_date} onChange={(event) => setFormData({ ...formData, expense_date: event.target.value })} className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary" required />
+            <label htmlFor="expense-date" className="field-label">Fecha</label>
+            <input id="expense-date" type="date" value={formData.expense_date} onChange={(event) => setFormData({ ...formData, expense_date: event.target.value })} className="field-control" required />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Descripción</label>
-            <textarea value={formData.description} onChange={(event) => setFormData({ ...formData, description: event.target.value })} placeholder="Detalles del gasto..." className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows={3} required />
+            <label htmlFor="expense-description" className="field-label">Descripción</label>
+            <textarea id="expense-description" value={formData.description} onChange={(event) => setFormData({ ...formData, description: event.target.value })} placeholder="Detalles del gasto…" className="field-control min-h-24 resize-y py-3" rows={3} required />
           </div>
 
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1" disabled={isPending}>Cancelar</Button>
-            <Button type="submit" className="flex-1" disabled={isPending || categories.length === 0}>{isPending ? 'Guardando...' : 'Registrar Gasto'}</Button>
+            <Button type="submit" className="flex-1" disabled={isPending || categories.length === 0} aria-busy={isPending}>{isPending ? 'Guardando…' : 'Registrar gasto'}</Button>
           </div>
         </form>
       </div>

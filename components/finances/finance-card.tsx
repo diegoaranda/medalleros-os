@@ -8,16 +8,14 @@ interface FinanceCardProps {
 
 export function FinanceCard({ title, amount, count }: FinanceCardProps) {
   return (
-    <div className="bg-card rounded-lg border border-border p-4 md:p-6">
-      <p className="text-sm text-muted-foreground font-medium mb-2">{title}</p>
-      <div className="space-y-2">
-        <p className="text-2xl md:text-3xl font-bold text-foreground">
+    <div className="surface flex items-end justify-between gap-4 p-4">
+      <div>
+        <p className="text-sm font-medium text-muted-foreground">{title}</p>
+        <p className="numeric mt-1 text-xl font-bold text-foreground">
           {formatMoney(amount)}
         </p>
-        <p className="text-xs text-muted-foreground">
-          {count} registro{count !== 1 ? 's' : ''}
-        </p>
       </div>
+      <p className="shrink-0 text-xs text-muted-foreground">{count} registro{count !== 1 ? 's' : ''}</p>
     </div>
   )
 }

@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2 } from 'lucide-react'
+import { ReceiptText, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { deleteExpense } from '@/app/finances/actions'
 import type { Expense } from '@/lib/finance/metrics'
 import { formatDate, formatMoney } from '@/lib/orders/types'
@@ -19,7 +20,7 @@ export function ExpenseList({ expenses }: ExpenseListProps) {
   const [isPending, startTransition] = useTransition()
 
   if (expenses.length === 0) {
-    return <div className="p-6 text-center text-muted-foreground"><p>No hay gastos registrados</p></div>
+    return <EmptyState icon={ReceiptText} title="No hay gastos registrados." description="Los gastos reales del período aparecerán aquí." />
   }
 
   const handleDelete = (id: string) => {
@@ -44,18 +45,19 @@ export function ExpenseList({ expenses }: ExpenseListProps) {
       {error ? <p className="p-4 text-sm text-destructive">{error}</p> : null}
       <div className="divide-y divide-border">
         {expenses.map((expense) => (
-          <div key={expense.id} className="p-4 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between hover:bg-muted/50 transition">
+          <div key={expense.id} className="flex flex-col p-4 transition-colors hover:bg-muted/35 md:flex-row md:items-center md:justify-between md:px-5">
             <div className="md:hidden space-y-2 mb-3">
               <div className="flex justify-between items-start gap-3">
                 <div>
                   <p className="font-semibold text-foreground">{expense.category_name}</p>
                   <p className="text-xs text-muted-foreground">{formatDate(expense.expense_date)}</p>
                 </div>
-                <span className="font-bold text-orange-600 dark:text-orange-400">{formatMoney(expense.amount)}</span>
+                <span className="numeric font-bold text-amber-700">{formatMoney(expense.amount)}</span>
               </div>
               <p className="text-sm text-muted-foreground">{expense.description}</p>
-              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 p-0" onClick={() => handleDelete(expense.id)} disabled={isPending && deletingId === expense.id}>
+              <Button variant="ghost" size="sm" className="text-red-700 hover:text-red-800" onClick={() => handleDelete(expense.id)} disabled={isPending && deletingId === expense.id} aria-label={`Eliminar gasto ${expense.description}`}>
                 <Trash2 size={16} />
+                Eliminar
               </Button>
             </div>
 
@@ -65,8 +67,8 @@ export function ExpenseList({ expenses }: ExpenseListProps) {
                 <p className="text-sm text-muted-foreground">{expense.description}</p>
               </div>
               <div className="text-sm text-muted-foreground">{formatDate(expense.expense_date)}</div>
-              <div className="font-bold text-orange-600 dark:text-orange-400 min-w-[100px] text-right">{formatMoney(expense.amount)}</div>
-              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleDelete(expense.id)} disabled={isPending && deletingId === expense.id}>
+              <div className="numeric min-w-[100px] text-right font-bold text-amber-700">{formatMoney(expense.amount)}</div>
+              <Button variant="ghost" size="icon-sm" className="text-red-700 hover:text-red-800" onClick={() => handleDelete(expense.id)} disabled={isPending && deletingId === expense.id} aria-label={`Eliminar gasto ${expense.description}`}>
                 <Trash2 size={16} />
               </Button>
             </div>
