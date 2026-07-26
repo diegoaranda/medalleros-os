@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button'
 import { signInWithPassword } from './actions'
 import { createClient } from '@/lib/supabase/server'
 import { BrandLogo } from '@/components/brand-logo'
+import { ForgotPasswordForm } from '@/components/auth/forgot-password-form'
 
 type LoginPageProps = {
   searchParams: Promise<{
     error?: string
+    message?: string
     next?: string
   }>
 }
@@ -64,9 +66,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 {params.error}
               </p>
             ) : null}
+            {params.message ? (
+              <p role="status" className="rounded-lg border border-green-200 bg-green-50 px-3 py-2.5 text-sm leading-5 text-green-700">
+                {params.message}
+              </p>
+            ) : null}
             <Button type="submit" size="lg" className="mt-1 w-full bg-black text-white hover:bg-neutral-800">
               Entrar
             </Button>
+            <ForgotPasswordForm />
           </div>
         </form>
         <p className="mt-5 text-center text-xs text-white/35">Uso interno · Medalleros SC</p>

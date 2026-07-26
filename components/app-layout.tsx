@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Menu, X, Calendar, ShoppingCart, Wrench, Truck, DollarSign, BarChart3, Settings } from 'lucide-react'
 import { BrandLogo } from '@/components/brand-logo'
+import { LogoutButton } from '@/components/auth/logout-button'
 
 const navItems = [
   { href: '/dashboard', label: 'Hoy', icon: Calendar },
@@ -30,7 +31,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener('keydown', closeOnEscape)
   }, [sidebarOpen])
 
-  if (pathname === '/login') {
+  if (pathname === '/login' || pathname === '/restablecer-contrasena') {
     return <>{children}</>
   }
 
@@ -110,6 +111,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="border-t border-white/10 px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
           <p className="text-xs font-semibold text-white">Medalleros SC</p>
           <p className="mt-0.5 text-[0.6875rem] text-white/40">Gestión operativa</p>
+          <div className="mt-3 border-t border-white/10 pt-3">
+            <LogoutButton />
+          </div>
         </div>
       </aside>
 
