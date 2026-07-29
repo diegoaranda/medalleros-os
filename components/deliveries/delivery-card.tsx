@@ -10,6 +10,7 @@ import type { PaymentMethodOption } from '@/lib/orders/types'
 import { formatMoney, normalizeDeliveryType } from '@/lib/orders/types'
 import { DeliveryPaymentModal } from './delivery-payment-modal'
 import { DeliveryDetailModal } from './delivery-detail-modal'
+import { EugenioCostEditor } from '@/components/orders/eugenio-cost-editor'
 
 type DeliveryCardProps = {
   order: OrderWithFinancials
@@ -47,6 +48,7 @@ export function DeliveryCard({ order, paymentMethods }: DeliveryCardProps) {
           <div><p className="text-xs text-muted-foreground">Deporte</p><p className="font-semibold">{order.sport_name}</p></div>
           <div><p className="text-xs text-muted-foreground">Total</p><p className="font-semibold">{formatMoney(order.total_amount)}</p></div>
           <div><p className="text-xs text-muted-foreground">Saldo pendiente</p><p className={`font-bold ${order.balance_amount > 0 ? 'text-destructive' : 'text-emerald-600'}`}>{formatMoney(order.balance_amount)}</p></div>
+          <EugenioCostEditor orderId={order.id} initialCost={order.production_cost} />
           <div className="col-span-2 md:col-span-3">
             <p className="text-xs text-muted-foreground">{normalizeDeliveryType(order.delivery_type) === 'local' ? 'Modalidad' : 'Destino'}</p>
             <p className="font-semibold">{normalizeDeliveryType(order.delivery_type) === 'local' ? 'Recoge en casa · Santa Cruz' : order.destination || '-'}</p>

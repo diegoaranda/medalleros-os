@@ -10,6 +10,7 @@ import { formatMoney, normalizeOrderStatus, statusColors, statusLabels } from '@
 import { calculateOrderFinancials } from '@/lib/finance/calculations'
 import { hasValidEugenioCost } from '@/lib/orders/production'
 import { ProductionCostModal } from './production-cost-modal'
+import { EugenioCostEditor } from '@/components/orders/eugenio-cost-editor'
 
 type ProductionCardProps = {
   order: OrderWithFinancials
@@ -20,10 +21,11 @@ export function ProductionCard({ order, reservePercentage }: ProductionCardProps
   const router = useRouter()
   const [showCostModal, setShowCostModal] = useState(false)
   const [showAdvanceConfirmation, setShowAdvanceConfirmation] = useState(false)
+  const [productionCost, setProductionCost] = useState(order.production_cost)
   const [error, setError] = useState('')
   const [isPending, startTransition] = useTransition()
-  const hasCost = hasValidEugenioCost(order.production_cost)
-  const financials = calculateOrderFinancials(order, reservePercentage)
+  const hasCost = hasValidEugenioCost(productionCost)
+  const financials = calculateOrderFinancials({ ...order, production_cost: productionCost }, reservePercentage)
 
   const advanceStatus = () => {
     setError('')
@@ -65,10 +67,7 @@ export function ProductionCard({ order, reservePercentage }: ProductionCardProps
             <span className="text-xs text-muted-foreground">Gasto producción</span>
             <p className="numeric mt-0.5 font-semibold text-amber-700">{formatMoney(order.production_expense)}</p>
           </div>
-          <div>
-            <span className="text-xs text-muted-foreground">Costo Eugenio</span>
-            <p className={`numeric mt-0.5 font-semibold ${hasCost ? 'text-amber-700' : 'text-red-700'}`}>{hasCost ? formatMoney(order.production_cost) : 'Pendiente'}</p>
-          </div>
+          <EugenioCostEditor orderId={order.id} initialCost={order.production_cost} onUpdated={setProductionCost} />
           <div>
             <span className="text-xs text-muted-foreground">Ganancia bruta</span>
             <p className={`numeric mt-0.5 font-semibold ${financials.gross_profit < 0 ? 'text-destructive' : 'text-emerald-700'}`}>{formatMoney(financials.gross_profit)}</p>
@@ -101,7 +100,7 @@ export function ProductionCard({ order, reservePercentage }: ProductionCardProps
         <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
           <Button variant="outline" onClick={() => setShowCostModal(true)} disabled={isPending}>
             <DollarSign size={16} className="mr-1" />
-            Costos / Nota
+            Gasto / Nota
           </Button>
           <Button
             onClick={() => setShowAdvanceConfirmation(true)}

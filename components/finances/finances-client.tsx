@@ -91,7 +91,7 @@ export function FinancesClient({ expenses, categories, metrics, reservePercentag
           />
         </div>
         <div className="surface grid grid-cols-2 divide-x divide-y divide-border overflow-hidden lg:grid-cols-4 lg:divide-y-0">
-          <FinanceMetric label="Costo Eugenio" value={formatMoney(metrics.productionCosts)} tone="amber" />
+          <FinanceMetric label="Costo de Eugenio" value={formatMoney(metrics.productionCosts)} tone="amber" />
           <FinanceMetric label="Fondo de gastos de producción" value={formatMoney(metrics.productionExpenses)} tone="amber" />
           <FinanceMetric label={`Diezmo (${reservePercentage}%)`} value={formatMoney(metrics.reserveAmount)} tone="purple" />
           <FinanceMetric label="Gastos reales" value={formatMoney(metrics.expenses)} tone="slate" />

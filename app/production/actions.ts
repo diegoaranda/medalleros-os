@@ -13,13 +13,6 @@ function cleanText(value: string) {
   return value.trim()
 }
 
-function parseOptionalAmount(value: string) {
-  const cleaned = cleanText(value)
-  if (!cleaned) return null
-  const amount = Number(cleaned)
-  return Number.isFinite(amount) ? amount : NaN
-}
-
 async function requireUser() {
   const supabase = await createClient()
   const {
@@ -41,25 +34,19 @@ function revalidateProductionSurfaces() {
 }
 
 export async function updateProductionInfo(orderId: string, values: {
-  production_cost: string
   production_expense: string
   production_notes: string
 }): Promise<ActionResult<{ id: string }>> {
   const { supabase, user } = await requireUser()
   if (!user) return { ok: false, error: 'Tu sesión expiró. Vuelve a iniciar sesión.' }
 
-  const productionCost = parseOptionalAmount(values.production_cost)
   const productionExpense = Number(cleanText(values.production_expense))
-  if (typeof productionCost === 'number' && (!Number.isFinite(productionCost) || productionCost < 0)) {
-    return { ok: false, error: 'Ingresa un costo Eugenio válido.' }
-  }
   if (!Number.isFinite(productionExpense) || productionExpense < 0) {
     return { ok: false, error: 'Ingresa un gasto de producción válido.' }
   }
 
   const { data, error } = await (supabase.from('orders') as any)
     .update({
-      production_cost: productionCost,
       production_expense: productionExpense,
       production_notes: cleanText(values.production_notes) || null,
     })
@@ -68,6 +55,35 @@ export async function updateProductionInfo(orderId: string, values: {
     .single()
 
   if (error) return { ok: false, error: 'No se pudo guardar la información de producción.' }
+
+  revalidateProductionSurfaces()
+  return { ok: true, data }
+}
+
+export async function updateEugenioCost(orderId: string, value: string): Promise<ActionResult<{ id: string; production_cost: number }>> {
+  const { supabase, user } = await requireUser()
+  if (!user) return { ok: false, error: 'Tu sesión expiró. Vuelve a iniciar sesión.' }
+
+  const cleaned = cleanText(value)
+  const productionCost = cleaned ? Number(cleaned) : NaN
+  if (!hasValidEugenioCost(productionCost)) {
+    return { ok: false, error: 'El costo de Eugenio debe ser mayor que 0.' }
+  }
+
+  const { data: existingOrder, error: existingOrderError } = await (supabase.from('orders') as any)
+    .select('id')
+    .eq('id', orderId)
+    .single()
+  if (existingOrderError || !existingOrder) {
+    return { ok: false, error: 'No se pudo actualizar el costo de Eugenio.' }
+  }
+
+  const { data, error } = await (supabase.from('orders') as any)
+    .update({ production_cost: productionCost })
+    .eq('id', orderId)
+    .select('id, production_cost')
+    .single()
+  if (error) return { ok: false, error: 'No se pudo actualizar el costo de Eugenio.' }
 
   revalidateProductionSurfaces()
   return { ok: true, data }

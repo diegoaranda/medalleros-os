@@ -17,18 +17,16 @@ type ProductionCostModalProps = {
 export function ProductionCostModal({ order, open, onOpenChange }: ProductionCostModalProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [cost, setCost] = useState('')
   const [productionExpense, setProductionExpense] = useState('')
   const [notes, setNotes] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
     if (!open) return
-    setCost(order.production_cost === null ? '' : String(order.production_cost))
     setProductionExpense(String(order.production_expense))
     setNotes(order.production_notes ?? '')
     setError('')
-  }, [open, order.production_cost, order.production_expense, order.production_notes])
+  }, [open, order.production_expense, order.production_notes])
 
   if (!open) return null
 
@@ -38,7 +36,6 @@ export function ProductionCostModal({ order, open, onOpenChange }: ProductionCos
 
     startTransition(async () => {
       const result = await updateProductionInfo(order.id, {
-        production_cost: cost,
         production_expense: productionExpense,
         production_notes: notes,
       })
@@ -89,27 +86,6 @@ export function ProductionCostModal({ order, open, onOpenChange }: ProductionCos
                 required
               />
             </div>
-          </div>
-
-          <div>
-            <label htmlFor="eugenio-cost" className="field-label">Costo con Eugenio</label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">Bs</span>
-              <input
-                id="eugenio-cost"
-                type="number"
-                inputMode="decimal"
-                placeholder="0.00"
-                value={cost}
-                onChange={(event) => setCost(event.target.value)}
-                className="field-control numeric pl-11"
-                step="0.01"
-                min="0"
-              />
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Costo actual: {order.production_cost === null ? 'Sin costo' : formatMoney(order.production_cost)}
-            </p>
           </div>
 
           <div>

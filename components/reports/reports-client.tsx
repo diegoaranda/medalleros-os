@@ -449,7 +449,7 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
           <div className="surface grid grid-cols-2 divide-x divide-y divide-border overflow-hidden lg:grid-cols-5 lg:divide-y-0">
             <MetricCard label="Total vendido" value={formatMoney(metrics.sold)} tone="slate" />
             <MetricCard label="Total cobrado" value={formatMoney(metrics.collected)} tone="green" />
-            <MetricCard label="Costo Eugenio" value={formatMoney(metrics.productionCosts)} tone="amber" />
+            <MetricCard label="Costo de Eugenio" value={formatMoney(metrics.productionCosts)} tone="amber" />
             <MetricCard label="Ganancia neta" value={formatMoney(metrics.netProfit)} tone={netProfitTone} />
             <MetricCard label="Pendiente" value={formatMoney(metrics.pending)} tone="red" />
           </div>
@@ -532,7 +532,7 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
                 </div>
                 <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-4">
                   <div><dt className="text-muted-foreground">Precio venta</dt><dd className="font-semibold">{formatMoney(order.total_amount)}</dd></div>
-                  <div><dt className="text-muted-foreground">Costo Eugenio</dt><dd className="font-semibold text-amber-800 dark:text-amber-300">{formatMoney(order.production_cost)}</dd></div>
+                  <div><dt className="text-muted-foreground">Costo de Eugenio</dt><dd className="font-semibold text-amber-800 dark:text-amber-300">{formatMoney(order.production_cost)}</dd></div>
                   <div><dt className="text-muted-foreground">Ganancia neta</dt><dd className={`font-bold ${financials.net_profit < 0 ? 'text-destructive' : 'text-emerald-700 dark:text-emerald-300'}`}>{formatMoney(financials.net_profit)}</dd></div>
                   <div><dt className="text-muted-foreground">Ahorro 30%</dt><dd className="font-semibold text-emerald-700 dark:text-emerald-300">{formatMoney(financials.savings_amount)}</dd></div>
                   <div><dt className="text-muted-foreground">Casa 70%</dt><dd className="font-semibold text-emerald-700 dark:text-emerald-300">{formatMoney(financials.household_amount)}</dd></div>
@@ -579,7 +579,7 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
                   <th className="sticky left-[120px] z-20 w-[180px] bg-muted px-4 py-3 font-semibold shadow-[8px_0_12px_-12px_rgba(0,0,0,0.65)]">Cliente</th>
                   <th className="px-4 py-3 font-semibold">Deporte</th>
                   <th className="px-4 py-3 text-right font-semibold">Precio venta</th>
-                  <th className="px-4 py-3 text-right font-semibold">Costo Eugenio</th>
+                  <th className="px-4 py-3 text-right font-semibold">Costo de Eugenio</th>
                   <th className="px-4 py-3 text-right font-semibold">Ganancia neta</th>
                   <th className="px-4 py-3 text-right font-semibold">Ahorro 30%</th>
                   <th className="px-4 py-3 text-right font-semibold">Casa 70%</th>
