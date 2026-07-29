@@ -2,12 +2,13 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, ChevronRight, DollarSign } from 'lucide-react'
+import { AlertTriangle, ChevronRight, DollarSign, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { setProductionOrderStatus } from '@/app/production/actions'
 import type { OrderWithFinancials } from '@/lib/data/queries'
 import { formatMoney, normalizeOrderStatus, statusColors, statusLabels } from '@/lib/orders/types'
 import { calculateOrderFinancials } from '@/lib/finance/calculations'
+import { hasValidEugenioCost } from '@/lib/orders/production'
 import { ProductionCostModal } from './production-cost-modal'
 
 type ProductionCardProps = {
@@ -18,9 +19,10 @@ type ProductionCardProps = {
 export function ProductionCard({ order, reservePercentage }: ProductionCardProps) {
   const router = useRouter()
   const [showCostModal, setShowCostModal] = useState(false)
+  const [showAdvanceConfirmation, setShowAdvanceConfirmation] = useState(false)
   const [error, setError] = useState('')
   const [isPending, startTransition] = useTransition()
-  const hasCost = order.production_cost !== null
+  const hasCost = hasValidEugenioCost(order.production_cost)
   const financials = calculateOrderFinancials(order, reservePercentage)
 
   const advanceStatus = () => {
@@ -34,6 +36,7 @@ export function ProductionCard({ order, reservePercentage }: ProductionCardProps
       }
 
       router.refresh()
+      setShowAdvanceConfirmation(false)
     })
   }
 
@@ -87,9 +90,9 @@ export function ProductionCard({ order, reservePercentage }: ProductionCardProps
         ) : null}
 
         {!hasCost ? (
-          <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          <div id={`production-cost-warning-${order.id}`} className="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
             <AlertTriangle size={16} className="mt-0.5" />
-            <span>Costo Eugenio pendiente</span>
+            <span>Registra el costo de Eugenio para pasar este pedido a Entregas.</span>
           </div>
         ) : null}
 
@@ -100,14 +103,57 @@ export function ProductionCard({ order, reservePercentage }: ProductionCardProps
             <DollarSign size={16} className="mr-1" />
             Costos / Nota
           </Button>
-          <Button onClick={advanceStatus} disabled={isPending}>
+          <Button
+            onClick={() => setShowAdvanceConfirmation(true)}
+            disabled={isPending || !hasCost}
+            aria-describedby={!hasCost ? `production-cost-warning-${order.id}` : undefined}
+          >
             <ChevronRight size={16} className="mr-1" />
-            {isPending ? 'Guardando...' : 'Marcar listo'}
+            Pasar a entregas
           </Button>
         </div>
       </article>
 
       <ProductionCostModal order={order} open={showCostModal} onOpenChange={setShowCostModal} />
+
+      {showAdvanceConfirmation ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`advance-order-title-${order.id}`}
+            aria-describedby={`advance-order-description-${order.id}`}
+            className="w-full bg-card sm:max-w-md sm:rounded-xl sm:border sm:border-border"
+          >
+            <div className="flex items-center justify-between border-b border-border px-4 py-4 sm:px-5">
+              <h2 id={`advance-order-title-${order.id}`} className="text-xl font-bold tracking-[-0.025em]">¿Pasar pedido a Entregas?</h2>
+              <button
+                onClick={() => setShowAdvanceConfirmation(false)}
+                className="flex size-11 items-center justify-center rounded-lg hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                type="button"
+                aria-label="Cerrar confirmación"
+                disabled={isPending}
+              >
+                <X size={22} />
+              </button>
+            </div>
+            <div className="space-y-5 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-5">
+              <p id={`advance-order-description-${order.id}`} className="text-sm text-muted-foreground">
+                El pedido saldrá de Producción y aparecerá en el módulo Entregas.
+              </p>
+              {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
+              <div className="flex gap-3">
+                <Button type="button" variant="outline" onClick={() => setShowAdvanceConfirmation(false)} className="flex-1" disabled={isPending}>
+                  Cancelar
+                </Button>
+                <Button type="button" onClick={advanceStatus} className="flex-1" disabled={isPending}>
+                  {isPending ? 'Guardando…' : 'Pasar a entregas'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   )
 }

@@ -44,7 +44,7 @@ export function ProductionClient({ productionOrders, reservePercentage, error }:
         <div className="mb-3 flex items-center justify-between">
           <div>
             <h2 id="production-title" className="section-title">En producción</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Completa la información pendiente antes de marcar listo.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Completa la información pendiente antes de pasar a Entregas.</p>
           </div>
           <span className="numeric rounded-md bg-amber-100 px-2.5 py-1 text-sm font-bold text-amber-800" aria-label={`${filteredProductionOrders.length} pedidos`}>
             {filteredProductionOrders.length}
