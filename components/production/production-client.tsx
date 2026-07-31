@@ -5,15 +5,19 @@ import { Search } from 'lucide-react'
 import { PageHeader } from '@/components/ui/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 import type { OrderWithFinancials } from '@/lib/data/queries'
+import type { CatalogOption, PaymentMethodOption } from '@/lib/orders/types'
 import { ProductionCard } from './production-card'
 
 type ProductionClientProps = {
   productionOrders: OrderWithFinancials[]
   reservePercentage: number
+  sports: CatalogOption[]
+  paymentMethods: PaymentMethodOption[]
+  defaultProductionExpense: number
   error?: string
 }
 
-export function ProductionClient({ productionOrders, reservePercentage, error }: ProductionClientProps) {
+export function ProductionClient({ productionOrders, reservePercentage, sports, paymentMethods, defaultProductionExpense, error }: ProductionClientProps) {
   const [requestFilter, setRequestFilter] = useState('')
   const normalizedFilter = requestFilter.trim().toLowerCase()
   const filteredProductionOrders = useMemo(
@@ -51,7 +55,7 @@ export function ProductionClient({ productionOrders, reservePercentage, error }:
           </span>
         </div>
         <div className="surface divide-y divide-border overflow-hidden">
-          {filteredProductionOrders.length > 0 ? filteredProductionOrders.map((order) => <ProductionCard key={order.id} order={order} reservePercentage={reservePercentage} />) : (
+          {filteredProductionOrders.length > 0 ? filteredProductionOrders.map((order) => <ProductionCard key={order.id} order={order} reservePercentage={reservePercentage} sports={sports} paymentMethods={paymentMethods} defaultProductionExpense={defaultProductionExpense} />) : (
             <EmptyState title="No hay pedidos en producción." description="Los pedidos nuevos aparecerán aquí automáticamente." />
           )}
         </div>

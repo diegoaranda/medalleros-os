@@ -1,6 +1,7 @@
 'use client'
 
 import { X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { OrderWithFinancials } from '@/lib/data/queries'
 import {
   deliveryTypeLabels,
@@ -16,9 +17,10 @@ type DeliveryDetailModalProps = {
   order: OrderWithFinancials
   open: boolean
   onOpenChange: (open: boolean) => void
+  onEdit: () => void
 }
 
-export function DeliveryDetailModal({ order, open, onOpenChange }: DeliveryDetailModalProps) {
+export function DeliveryDetailModal({ order, open, onOpenChange, onEdit }: DeliveryDetailModalProps) {
   if (!open) return null
 
   return (
@@ -61,6 +63,7 @@ export function DeliveryDetailModal({ order, open, onOpenChange }: DeliveryDetai
           </div>
 
           {order.notes ? <p className="text-sm text-muted-foreground bg-muted/50 rounded p-3">{order.notes}</p> : null}
+          <Button type="button" variant="outline" className="w-full" onClick={onEdit}>Editar pedido</Button>
         </div>
       </div>
     </div>

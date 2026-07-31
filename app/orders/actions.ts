@@ -56,6 +56,7 @@ async function resolveOrderForm(values: OrderFormValues): Promise<ActionResult<O
   const totalAmount = parseAmount(values.total_amount)
   const destination = cleanText(values.destination)
   const productionExpense = parseAmount(values.production_expense)
+  const productionCost = values.production_cost.trim() === '' ? null : parseAmount(values.production_cost)
   const deliveryType = normalizeDeliveryType(values.delivery_type)
 
   if (!requestNumber) return { ok: false, error: 'Ingresa el N.º de solicitud.' }
@@ -64,6 +65,7 @@ async function resolveOrderForm(values: OrderFormValues): Promise<ActionResult<O
   if (!cleanText(values.sport_name)) return { ok: false, error: 'Selecciona o escribe un deporte.' }
   if (!Number.isFinite(totalAmount) || totalAmount < 0) return { ok: false, error: 'Ingresa un precio de venta válido.' }
   if (!Number.isFinite(productionExpense) || productionExpense < 0) return { ok: false, error: 'Ingresa un gasto de producción válido.' }
+  if (productionCost !== null && (!Number.isFinite(productionCost) || productionCost < 0)) return { ok: false, error: 'Ingresa un costo de Eugenio válido.' }
   if (!isDeliveryType(values.delivery_type)) return { ok: false, error: 'Selecciona un tipo de entrega válido.' }
   if (deliveryType === 'envio' && !destination) return { ok: false, error: 'Ingresa el destino del envío.' }
 
@@ -75,6 +77,8 @@ async function resolveOrderForm(values: OrderFormValues): Promise<ActionResult<O
     sport_name: cleanText(values.sport_name),
     total_amount: totalAmount,
     production_expense: productionExpense,
+    production_cost: productionCost,
+    production_notes: cleanText(values.production_notes) || null,
     delivery_type: deliveryType,
     destination: deliveryType === 'envio' ? destination : 'Santa Cruz',
     notes: cleanText(values.notes) || null,
@@ -135,10 +139,30 @@ export async function updateOrder(id: string, values: OrderFormValues): Promise<
   const parsed = await resolveOrderForm(values)
   if (!parsed.ok) return parsed
 
+  const editableFields = 'id, request_number, customer_name, customer_phone, sport_id, sport_name, total_amount, production_expense, production_cost, production_notes, delivery_type, destination, notes, due_date, status'
+  const { data: existing, error: existingError } = await (supabase.from('orders') as any)
+    .select(editableFields)
+    .eq('id', id)
+    .single()
+
+  if (existingError || !existing) return { ok: false, error: 'El pedido ya no existe o no se pudo validar.' }
+
   const update: OrderUpdate = { ...parsed.data }
   const { data, error } = await (supabase.from('orders') as any).update(update).eq('id', id).select('id').single()
 
   if (error) return { ok: false, error: 'No se pudo actualizar el pedido.' }
+
+  const changedFields = Object.keys(update).filter((field) => {
+    const before = existing[field] ?? null
+    const after = (update as Record<string, unknown>)[field] ?? null
+    return String(before) !== String(after)
+  })
+  console.info('order.updated', {
+    orderId: id,
+    changedFields,
+    userId: user.id,
+    occurredAt: new Date().toISOString(),
+  })
 
   revalidateOrderSurfaces()
   return { ok: true, data }

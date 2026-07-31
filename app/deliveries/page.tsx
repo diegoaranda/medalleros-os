@@ -21,6 +21,8 @@ export default async function DeliveriesPage() {
       readyOrders={orders.filter((order) => order.status === 'listo')}
       deliveredOrders={orders.filter((order) => order.status === 'entregado')}
       paymentMethods={catalogs.paymentMethods}
+      sports={catalogs.sports}
+      defaultProductionExpense={30}
       error={error || catalogError}
     />
   )

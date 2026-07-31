@@ -22,6 +22,8 @@ export type OrderFormValues = {
   sport_name: string
   total_amount: string
   production_expense: string
+  production_cost: string
+  production_notes: string
   delivery_type: DeliveryType
   destination: string
   notes: string
@@ -83,6 +85,8 @@ export function emptyOrderFormValues(): OrderFormValues {
     sport_name: '',
     total_amount: '',
     production_expense: '30',
+    production_cost: '',
+    production_notes: '',
     delivery_type: 'local',
     destination: 'Santa Cruz',
     notes: '',
@@ -105,6 +109,8 @@ export function orderToFormValues(order: OrderWithFinancials): OrderFormValues {
     sport_name: order.sport_name,
     total_amount: String(order.total_amount),
     production_expense: String(order.production_expense),
+    production_cost: order.production_cost == null ? '' : String(order.production_cost),
+    production_notes: order.production_notes ?? '',
     delivery_type: deliveryType,
     destination: deliveryType === 'local' ? 'Santa Cruz' : order.destination ?? '',
     notes: order.notes ?? '',

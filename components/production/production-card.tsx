@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, ChevronRight, DollarSign, X } from 'lucide-react'
+import { AlertTriangle, ChevronRight, DollarSign, Edit2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { setProductionOrderStatus } from '@/app/production/actions'
 import type { OrderWithFinancials } from '@/lib/data/queries'
@@ -11,16 +11,22 @@ import { calculateOrderFinancials } from '@/lib/finance/calculations'
 import { hasValidEugenioCost } from '@/lib/orders/production'
 import { ProductionCostModal } from './production-cost-modal'
 import { EugenioCostEditor } from '@/components/orders/eugenio-cost-editor'
+import { OrderFormModal } from '@/components/orders/order-form-modal'
+import type { CatalogOption, PaymentMethodOption } from '@/lib/orders/types'
 
 type ProductionCardProps = {
   order: OrderWithFinancials
   reservePercentage: number
+  sports: CatalogOption[]
+  paymentMethods: PaymentMethodOption[]
+  defaultProductionExpense: number
 }
 
-export function ProductionCard({ order, reservePercentage }: ProductionCardProps) {
+export function ProductionCard({ order, reservePercentage, sports, paymentMethods, defaultProductionExpense }: ProductionCardProps) {
   const router = useRouter()
   const [showCostModal, setShowCostModal] = useState(false)
   const [showAdvanceConfirmation, setShowAdvanceConfirmation] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [productionCost, setProductionCost] = useState(order.production_cost)
   const [error, setError] = useState('')
   const [isPending, startTransition] = useTransition()
@@ -97,7 +103,10 @@ export function ProductionCard({ order, reservePercentage }: ProductionCardProps
 
         {error ? <p className="mb-3 text-sm text-destructive">{error}</p> : null}
 
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+        <div className="grid grid-cols-1 gap-2 sm:flex sm:justify-end">
+          <Button variant="outline" onClick={() => setShowEditModal(true)} disabled={isPending}>
+            <Edit2 size={16} className="mr-1" /> Editar pedido
+          </Button>
           <Button variant="outline" onClick={() => setShowCostModal(true)} disabled={isPending}>
             <DollarSign size={16} className="mr-1" />
             Gasto / Nota
@@ -114,6 +123,7 @@ export function ProductionCard({ order, reservePercentage }: ProductionCardProps
       </article>
 
       <ProductionCostModal order={order} open={showCostModal} onOpenChange={setShowCostModal} />
+      <OrderFormModal order={order} open={showEditModal} onOpenChange={setShowEditModal} sports={sports} paymentMethods={paymentMethods} defaultProductionExpense={defaultProductionExpense} />
 
       {showAdvanceConfirmation ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
