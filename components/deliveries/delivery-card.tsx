@@ -31,7 +31,7 @@ export function DeliveryCard({ order, paymentMethods, sports, defaultProductionE
   return (
     <>
       <article className={`bg-card px-3 py-3 transition-colors hover:bg-muted/25 sm:px-4 ${hasBalance ? 'border-l-3 border-l-red-400' : ''} ${delivered ? 'bg-muted/35 opacity-80' : ''}`} aria-label={`${delivered ? 'Pedido entregado' : 'Pedido pendiente'} de ${order.customer_name}`}>
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-center">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <h3 className="truncate font-bold">{order.customer_name}</h3>
@@ -41,7 +41,7 @@ export function DeliveryCard({ order, paymentMethods, sports, defaultProductionE
             </div>
             <p className="mt-0.5 text-sm text-muted-foreground">🏅 {order.sport_name} · {normalizeDeliveryType(order.delivery_type) === 'local' ? 'Local' : order.destination || 'Envío'}</p>
           </div>
-          <div className="flex flex-wrap items-end gap-x-4 gap-y-1 text-sm lg:justify-end">
+          <div className="flex flex-wrap items-end gap-x-4 gap-y-1 text-sm xl:justify-end">
             <p className="text-xs text-muted-foreground">Total <span className="numeric font-medium text-foreground">{formatMoney(order.total_amount)}</span></p>
             <p className="text-xs text-muted-foreground">Costo Eugenio <span className={`numeric font-semibold ${hasProductionCost ? 'text-foreground' : 'text-red-700'}`}>{hasProductionCost ? formatMoney(order.production_cost) : 'pendiente'}</span></p>
             <div className="min-w-24">
@@ -49,7 +49,7 @@ export function DeliveryCard({ order, paymentMethods, sports, defaultProductionE
               <p className={`numeric text-lg font-bold leading-tight ${hasBalance ? 'text-destructive' : 'text-emerald-700'}`}>{formatMoney(order.balance_amount)}</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 lg:flex lg:justify-end">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
             <Button size="sm" variant="outline" onClick={() => setShowDetailModal(true)}><Eye size={16} />Ver detalle</Button>
             {!delivered ? <Button size="sm" className="bg-primary/90 hover:bg-primary" onClick={() => setShowPaymentModal(true)}><Check size={16} />Entregar pedido</Button> : null}
           </div>

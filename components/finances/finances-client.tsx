@@ -41,12 +41,11 @@ type FinancesClientProps = {
   error?: string
 }
 
-function currentMonthValue() {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-}
-
 function getMonthRange(monthValue: string) {
+  if (monthValue === 'all') {
+    return { from: new Date(0), to: endOfToday() }
+  }
+
   const [year, month] = monthValue.split('-').map(Number)
   const from = new Date(year, month - 1, 1)
   const monthEnd = new Date(year, month, 0, 23, 59, 59, 999)
@@ -56,15 +55,18 @@ function getMonthRange(monthValue: string) {
 
 export function FinancesClient({ orders, payments, expenses, categories, reservePercentage, error }: FinancesClientProps) {
   const [showExpenseModal, setShowExpenseModal] = useState(false)
-  const [month, setMonth] = useState(currentMonthValue)
+  const [month, setMonth] = useState('all')
   const [categoryId, setCategoryId] = useState('all')
   const range = useMemo(() => getMonthRange(month), [month])
   const selectedCategory = categories.find((category) => category.id === categoryId)
-  const filteredExpenses = useMemo(() => expenses.filter((expense) => {
-    const isInPeriod = isInRange(expense.expense_date, range)
-    const isInCategory = categoryId === 'all' || expense.category_id === categoryId || expense.category_name === selectedCategory?.name
-    return isInPeriod && isInCategory
-  }), [categoryId, expenses, range, selectedCategory?.name])
+  const filteredExpenses = useMemo(() => expenses
+    .filter((expense) => {
+      const isInPeriod = isInRange(expense.expense_date, range)
+      const isInCategory = categoryId === 'all' || expense.category_id === categoryId || expense.category_name === selectedCategory?.name
+      return isInPeriod && isInCategory
+    })
+    .sort((left, right) => new Date(right.expense_date).getTime() - new Date(left.expense_date).getTime()),
+  [categoryId, expenses, range, selectedCategory?.name])
   const metrics = useMemo(
     () => calculateFinanceMetrics(orders, payments, filteredExpenses, range, reservePercentage),
     [filteredExpenses, orders, payments, range, reservePercentage],
@@ -77,7 +79,7 @@ export function FinancesClient({ orders, payments, expenses, categories, reserve
       count: categoryExpenses.length,
     }
   }).filter((item) => categoryId === 'all' || item.count > 0), [categories, categoryId, filteredExpenses])
-  const isDefaultFilter = month === currentMonthValue() && categoryId === 'all'
+  const isDefaultFilter = month === 'all' && categoryId === 'all'
 
   return (
     <div className="app-page">
@@ -101,10 +103,20 @@ export function FinancesClient({ orders, payments, expenses, categories, reserve
           <h2 id="expense-filters-title" className="font-semibold text-foreground">Filtros de gastos</h2>
           <p className="mt-1 text-sm text-muted-foreground">Consulta el historial por mes y categoría.</p>
         </div>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(11rem,0.7fr)_minmax(13rem,1fr)_auto] md:items-end">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:items-end lg:grid-cols-[minmax(11rem,0.7fr)_minmax(13rem,1fr)_auto]">
           <label>
             <span className="field-label">Período</span>
-            <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} className="field-control" />
+            <select value={month} onChange={(event) => setMonth(event.target.value)} className="field-control">
+              <option value="all">Todos los registros</option>
+              {Array.from({ length: 24 }, (_, index) => {
+                const date = new Date()
+                date.setDate(1)
+                date.setMonth(date.getMonth() - index)
+                const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+                const label = new Intl.DateTimeFormat('es-BO', { month: 'long', year: 'numeric' }).format(date)
+                return <option key={value} value={value}>{label.charAt(0).toUpperCase() + label.slice(1)}</option>
+              })}
+            </select>
           </label>
           <label>
             <span className="field-label">Tipo de gasto</span>
@@ -113,7 +125,7 @@ export function FinancesClient({ orders, payments, expenses, categories, reserve
               {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
             </select>
           </label>
-          <Button type="button" variant="outline" onClick={() => { setMonth(currentMonthValue()); setCategoryId('all') }} disabled={isDefaultFilter}>
+          <Button type="button" variant="outline" className="md:col-span-2 lg:col-span-1" onClick={() => { setMonth('all'); setCategoryId('all') }} disabled={isDefaultFilter}>
             <RotateCcw size={16} /> Limpiar filtros
           </Button>
         </div>
@@ -148,14 +160,14 @@ export function FinancesClient({ orders, payments, expenses, categories, reserve
 
       <div className="mb-3">
         <h2 className="text-xl font-semibold text-foreground">Gastos por categoría</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Distribución de gastos reales del período seleccionado.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Distribución de gastos reales del alcance seleccionado.</p>
       </div>
       <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {expensesByCategory.map((item) => <FinanceCard key={item.category} title={item.category} amount={item.total} count={item.count} />)}
       </div>
 
       <section className="surface overflow-hidden" aria-labelledby="recent-expenses-title">
-        <div className="border-b border-border px-4 py-4 sm:px-5"><h2 id="recent-expenses-title" className="section-title">Gastos del período</h2></div>
+        <div className="border-b border-border px-4 py-4 sm:px-5"><h2 id="recent-expenses-title" className="section-title">Historial de gastos</h2></div>
         <ExpenseList expenses={filteredExpenses} />
       </section>
 
