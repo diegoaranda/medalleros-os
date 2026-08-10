@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { OrderStatus } from '@/lib/supabase/database.types'
 import { hasValidEugenioCost } from '@/lib/orders/production'
+import { parseMoneyInput } from '@/lib/money'
 
 type ActionResult<T = undefined> =
   | { ok: true; data: T }
@@ -40,7 +41,7 @@ export async function updateProductionInfo(orderId: string, values: {
   const { supabase, user } = await requireUser()
   if (!user) return { ok: false, error: 'Tu sesión expiró. Vuelve a iniciar sesión.' }
 
-  const productionExpense = Number(cleanText(values.production_expense))
+  const productionExpense = parseMoneyInput(values.production_expense)
   if (!Number.isFinite(productionExpense) || productionExpense < 0) {
     return { ok: false, error: 'Ingresa un gasto de producción válido.' }
   }
@@ -64,8 +65,7 @@ export async function updateEugenioCost(orderId: string, value: string): Promise
   const { supabase, user } = await requireUser()
   if (!user) return { ok: false, error: 'Tu sesión expiró. Vuelve a iniciar sesión.' }
 
-  const cleaned = cleanText(value)
-  const productionCost = cleaned ? Number(cleaned) : NaN
+  const productionCost = parseMoneyInput(value)
   if (!hasValidEugenioCost(productionCost)) {
     return { ok: false, error: 'El costo de Eugenio debe ser mayor que 0.' }
   }

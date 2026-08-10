@@ -1,5 +1,6 @@
 import type { Database, DeliveryType, OrderStatus } from '@/lib/supabase/database.types'
 import type { OrderWithFinancials } from '@/lib/data/queries'
+import { formatMoneyAmount } from '@/lib/money'
 
 export type CatalogOption = {
   id: string
@@ -144,13 +145,7 @@ export function findDefaultPaymentMethod(paymentMethods: PaymentMethodOption[]) 
 }
 
 export function formatMoney(value: number | null | undefined) {
-  const amount = Number(value ?? 0)
-  const hasDecimals = Math.abs(amount % 1) > Number.EPSILON
-
-  return `Bs ${amount.toLocaleString('es-MX', {
-    minimumFractionDigits: hasDecimals ? 2 : 0,
-    maximumFractionDigits: 2,
-  })}`
+  return formatMoneyAmount(value)
 }
 
 export function formatDate(value: string | null | undefined) {

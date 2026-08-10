@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { parseMoneyInput } from '@/lib/money'
 
 type CatalogKind = 'sports' | 'medalleros' | 'payments' | 'expenses'
 type CatalogInput = {
@@ -27,8 +28,7 @@ function cleanText(value: string | undefined) {
 
 function parseSuggestedPrice(value: string | undefined) {
   if (!value) return 0
-  const price = Number(value)
-  return Number.isFinite(price) ? price : NaN
+  return parseMoneyInput(value)
 }
 
 async function requireUser() {
@@ -127,7 +127,7 @@ export async function updateFinancialSettings(values: {
   const { supabase, user } = await requireUser()
   if (!user) return { ok: false, error: 'Tu sesión expiró. Vuelve a iniciar sesión.' }
 
-  const productionExpenseDefault = Number(values.production_expense_default)
+  const productionExpenseDefault = parseMoneyInput(values.production_expense_default)
   const reservePercentage = Number(values.reserve_percentage)
 
   if (!Number.isFinite(productionExpenseDefault) || productionExpenseDefault < 0) {

@@ -16,6 +16,7 @@ import {
   orderToFormValues,
 } from '@/lib/orders/types'
 import { DestinationCombobox } from './destination-combobox'
+import { parseMoneyInput } from '@/lib/money'
 
 type OrderFormModalProps = {
   open: boolean
@@ -52,9 +53,14 @@ export function OrderFormModal({ open, onOpenChange, sports, paymentMethods, def
     setInitialValues(nextValues)
   }, [defaultProductionExpense, open, order, paymentMethods])
 
-  const initialPaymentAmount = Number(formData.initial_payment_amount) || 0
+  const parsedInitialPayment = parseMoneyInput(formData.initial_payment_amount || '0')
+  const initialPaymentAmount = Number.isFinite(parsedInitialPayment) ? parsedInitialPayment : 0
   const balancePreview = useMemo(
-    () => Math.max((Number(formData.total_amount) || 0) - (isEditing ? Number(order?.paid_amount ?? 0) : initialPaymentAmount), 0),
+    () => {
+      const parsedTotal = parseMoneyInput(formData.total_amount)
+      const total = Number.isFinite(parsedTotal) ? parsedTotal : 0
+      return Math.max(total - (isEditing ? Number(order?.paid_amount ?? 0) : initialPaymentAmount), 0)
+    },
     [formData.total_amount, initialPaymentAmount, isEditing, order?.paid_amount],
   )
   const hasChanges = JSON.stringify(formData) !== JSON.stringify(initialValues)
@@ -185,12 +191,12 @@ export function OrderFormModal({ open, onOpenChange, sports, paymentMethods, def
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="total-amount" className="field-label">Precio total (Bs)</label>
-                  <input id="total-amount" type="number" inputMode="decimal" placeholder="0,00" value={formData.total_amount} onChange={(event) => setFormData({ ...formData, total_amount: event.target.value })} className="field-control numeric" required min="0" step="0.01" />
+                  <input id="total-amount" type="text" inputMode="decimal" placeholder="0,00" value={formData.total_amount} onChange={(event) => setFormData({ ...formData, total_amount: event.target.value })} className="field-control numeric" required />
                 </div>
                 {!isEditing ? (
                   <div>
                     <label htmlFor="advance-amount" className="field-label">Anticipo (Bs)</label>
-                    <input id="advance-amount" type="number" inputMode="decimal" placeholder="0,00" value={formData.initial_payment_amount} onChange={(event) => setFormData({ ...formData, initial_payment_amount: event.target.value })} className="field-control numeric" min="0" step="0.01" />
+                    <input id="advance-amount" type="text" inputMode="decimal" placeholder="0,00" value={formData.initial_payment_amount} onChange={(event) => setFormData({ ...formData, initial_payment_amount: event.target.value })} className="field-control numeric" />
                   </div>
                 ) : null}
                 {!isEditing ? (
@@ -248,11 +254,11 @@ export function OrderFormModal({ open, onOpenChange, sports, paymentMethods, def
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="production-expense" className="field-label">Gasto de producción (Bs)</label>
-                  <input id="production-expense" type="number" inputMode="decimal" placeholder="30,00" value={formData.production_expense} onChange={(event) => setFormData({ ...formData, production_expense: event.target.value })} className="field-control numeric" required min="0" step="0.01" />
+                  <input id="production-expense" type="text" inputMode="decimal" placeholder="30,00" value={formData.production_expense} onChange={(event) => setFormData({ ...formData, production_expense: event.target.value })} className="field-control numeric" required />
                 </div>
                 {isEditing ? <div>
                   <label htmlFor="production-cost" className="field-label">Costo de Eugenio (Bs) <span className="font-normal text-muted-foreground">(opcional)</span></label>
-                  <input id="production-cost" type="number" inputMode="decimal" value={formData.production_cost} onChange={(event) => setFormData({ ...formData, production_cost: event.target.value })} className="field-control numeric" min="0" step="0.01" />
+                  <input id="production-cost" type="text" inputMode="decimal" value={formData.production_cost} onChange={(event) => setFormData({ ...formData, production_cost: event.target.value })} className="field-control numeric" />
                 </div> : null}
                 {isEditing ? <div>
                   <label htmlFor="production-notes" className="field-label">Nota de producción <span className="font-normal text-muted-foreground">(opcional)</span></label>

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { parseMoneyInput } from '@/lib/money'
 
 type ExpenseInput = {
   category_id: string
@@ -17,11 +18,6 @@ type ActionResult<T = undefined> =
 
 function cleanText(value: string) {
   return value.trim()
-}
-
-function parseAmount(value: string) {
-  const amount = Number(value)
-  return Number.isFinite(amount) ? amount : NaN
 }
 
 async function requireUser() {
@@ -45,7 +41,7 @@ export async function createExpense(values: ExpenseInput): Promise<ActionResult<
   const { supabase, user } = await requireUser()
   if (!user) return { ok: false, error: 'Tu sesión expiró. Vuelve a iniciar sesión.' }
 
-  const amount = parseAmount(values.amount)
+  const amount = parseMoneyInput(values.amount)
   const categoryName = cleanText(values.category_name)
   const description = cleanText(values.description)
 

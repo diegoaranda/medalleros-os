@@ -172,13 +172,11 @@ export function SettingsClient({ sports, paymentMethods, expenseCategories, fina
               <label htmlFor="default-production-expense" className="field-label">Gasto base por medallero (Bs)</label>
               <input
                 id="default-production-expense"
-                type="number"
+                type="text"
                 value={financialForm.production_expense_default}
                 onChange={(event) => setFinancialForm({ ...financialForm, production_expense_default: event.target.value })}
                 className="field-control numeric"
                 inputMode="decimal"
-                min="0"
-                step="0.01"
                 required
               />
             </div>

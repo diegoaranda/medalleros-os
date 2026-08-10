@@ -100,7 +100,7 @@ export function EugenioCostEditor({ orderId, initialCost, onUpdated }: EugenioCo
                 <label htmlFor={inputId} className="field-label">Costo de Eugenio</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-muted-foreground">Bs</span>
-                  <input ref={inputRef} id={inputId} type="number" inputMode="decimal" step="0.01" min="0.01" required value={value} onChange={(event) => setValue(event.target.value)} disabled={isPending} className="field-control numeric pl-11" />
+                  <input ref={inputRef} id={inputId} type="text" inputMode="decimal" required value={value} onChange={(event) => setValue(event.target.value)} disabled={isPending} className="field-control numeric pl-11" />
                 </div>
               </div>
               {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}

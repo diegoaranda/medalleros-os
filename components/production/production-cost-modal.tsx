@@ -75,14 +75,12 @@ export function ProductionCostModal({ order, open, onOpenChange }: ProductionCos
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">Bs</span>
               <input
                 id="production-expense-cost"
-                type="number"
+                type="text"
                 inputMode="decimal"
                 placeholder="30.00"
                 value={productionExpense}
                 onChange={(event) => setProductionExpense(event.target.value)}
                 className="field-control numeric pl-11"
-                step="0.01"
-                min="0"
                 required
               />
             </div>

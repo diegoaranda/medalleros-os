@@ -20,6 +20,7 @@ import {
   todayDateInputValue,
 } from '@/lib/orders/types'
 import { OrderFormModal } from './order-form-modal'
+import { parseMoneyInput } from '@/lib/money'
 
 type OrderDetailModalProps = {
   order: OrderWithFinancials
@@ -102,7 +103,8 @@ export function OrderDetailModal({
   const paidAmount = useMemo(() => payments.reduce((sum, payment) => sum + Number(payment.amount), 0), [payments])
   const currentPaid = activeTab === 'payments' && !paymentsLoading ? paidAmount : order.paid_amount
   const currentBalance = Math.max(Number(order.total_amount) - currentPaid, 0)
-  const nextPaymentAmount = Number(paymentForm.amount) || 0
+  const parsedNextPayment = parseMoneyInput(paymentForm.amount)
+  const nextPaymentAmount = Number.isFinite(parsedNextPayment) ? parsedNextPayment : 0
   const paymentExceedsBalance = nextPaymentAmount > currentBalance
   const nextBalance = Math.max(currentBalance - nextPaymentAmount, 0)
 
@@ -307,15 +309,13 @@ export function OrderDetailModal({
                     <label className="text-sm font-medium">
                     <span className="mb-1.5 block">Monto (Bs)</span>
                     <input
-                      type="number"
+                      type="text"
                       inputMode="decimal"
                       placeholder="Monto"
                       value={paymentForm.amount}
                       onChange={(event) => setPaymentForm({ ...paymentForm, amount: event.target.value })}
                       className="field-control"
                       required
-                      min="0.01"
-                      step="0.01"
                     />
                     </label>
                     <label className="text-sm font-medium">

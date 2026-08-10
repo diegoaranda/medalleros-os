@@ -5,17 +5,13 @@ import { createClient } from '@/lib/supabase/server'
 import type { Database, DeliveryType, OrderStatus } from '@/lib/supabase/database.types'
 import type { ActionResult, OrderFormValues, PaymentFormValues, OrderPayment } from '@/lib/orders/types'
 import { deliveryTypes, normalizeDeliveryType, orderStatuses } from '@/lib/orders/types'
+import { parseMoneyInput } from '@/lib/money'
 
 type OrderInsert = Database['public']['Tables']['orders']['Insert']
 type OrderUpdate = Database['public']['Tables']['orders']['Update']
 
 function cleanText(value: string) {
   return value.trim()
-}
-
-function parseAmount(value: string) {
-  const amount = Number(value)
-  return Number.isFinite(amount) ? amount : NaN
 }
 
 function isDeliveryType(value: string): value is DeliveryType {
@@ -53,10 +49,10 @@ async function resolveOrderForm(values: OrderFormValues): Promise<ActionResult<O
   const requestNumber = cleanText(values.request_number)
   const customerName = cleanText(values.customer_name)
   const customerPhone = cleanText(values.customer_phone)
-  const totalAmount = parseAmount(values.total_amount)
+  const totalAmount = parseMoneyInput(values.total_amount)
   const destination = cleanText(values.destination)
-  const productionExpense = parseAmount(values.production_expense)
-  const productionCost = values.production_cost.trim() === '' ? null : parseAmount(values.production_cost)
+  const productionExpense = parseMoneyInput(values.production_expense)
+  const productionCost = values.production_cost.trim() === '' ? null : parseMoneyInput(values.production_cost)
   const deliveryType = normalizeDeliveryType(values.delivery_type)
 
   if (!requestNumber) return { ok: false, error: 'Ingresa el N.º de solicitud.' }
@@ -95,7 +91,7 @@ export async function createOrder(values: OrderFormValues): Promise<ActionResult
   const parsed = await resolveOrderForm(values)
   if (!parsed.ok) return parsed
 
-  const initialPaymentAmount = parseAmount(values.initial_payment_amount || '0')
+  const initialPaymentAmount = parseMoneyInput(values.initial_payment_amount || '0')
   const totalAmount = Number(parsed.data.total_amount)
 
   if (!Number.isFinite(initialPaymentAmount) || initialPaymentAmount < 0) {
@@ -205,7 +201,7 @@ export async function registerOrderPayment(orderId: string, values: PaymentFormV
   const { supabase, user } = await requireUser()
   if (!user) return { ok: false, error: 'Tu sesión expiró. Vuelve a iniciar sesión.' }
 
-  const amount = parseAmount(values.amount)
+  const amount = parseMoneyInput(values.amount)
   const paymentMethodName = cleanText(values.payment_method_name)
 
   if (!Number.isFinite(amount) || amount <= 0) return { ok: false, error: 'Ingresa un monto de pago válido.' }

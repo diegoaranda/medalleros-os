@@ -89,7 +89,7 @@ export function RegisterExpenseModal({ open, onOpenChange, categories }: Registe
             <label htmlFor="expense-amount" className="field-label">Monto</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">Bs</span>
-              <input id="expense-amount" type="number" inputMode="decimal" placeholder="0,00" value={formData.amount} onChange={(event) => setFormData({ ...formData, amount: event.target.value })} className="field-control numeric pl-11" required step="0.01" min="0.01" />
+              <input id="expense-amount" type="text" inputMode="decimal" placeholder="0,00" value={formData.amount} onChange={(event) => setFormData({ ...formData, amount: event.target.value })} className="field-control numeric pl-11" required />
             </div>
           </div>
 

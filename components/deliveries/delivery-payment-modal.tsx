@@ -8,6 +8,7 @@ import { registerOrderPayment, updateOrderStatus } from '@/app/orders/actions'
 import type { OrderWithFinancials } from '@/lib/data/queries'
 import type { PaymentFormValues, PaymentMethodOption } from '@/lib/orders/types'
 import { findDefaultPaymentMethod, formatMoney, normalizeDeliveryType, todayDateInputValue } from '@/lib/orders/types'
+import { parseMoneyInput } from '@/lib/money'
 
 type DeliveryPaymentModalProps = {
   order: OrderWithFinancials
@@ -45,7 +46,7 @@ export function DeliveryPaymentModal({ order, paymentMethods, open, onOpenChange
   if (!open) return null
 
   const rawAmount = formData.amount.trim()
-  const amount = Number(rawAmount)
+  const amount = parseMoneyInput(rawAmount)
   const currentBalance = Number(order.balance_amount)
   const amountIsValid = rawAmount !== '' && Number.isFinite(amount) && amount >= 0 && amount <= currentBalance
   const remainingBalance = amountIsValid ? Math.max(currentBalance - amount, 0) : currentBalance
@@ -119,7 +120,7 @@ export function DeliveryPaymentModal({ order, paymentMethods, open, onOpenChange
 
             <div>
               <label htmlFor="delivery-payment-amount" className="field-label">Monto recibido hoy</label>
-              <div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-muted-foreground">Bs</span><input id="delivery-payment-amount" type="number" inputMode="decimal" value={formData.amount} onChange={(event) => setFormData({ ...formData, amount: event.target.value })} className="field-control numeric pl-11" required step="0.01" min="0" max={currentBalance} /></div>
+              <div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-muted-foreground">Bs</span><input id="delivery-payment-amount" type="text" inputMode="decimal" value={formData.amount} onChange={(event) => setFormData({ ...formData, amount: event.target.value })} className="field-control numeric pl-11" required /></div>
             </div>
 
             <div>

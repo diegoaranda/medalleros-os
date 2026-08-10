@@ -119,7 +119,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main id="main-content" className="min-w-0 flex-1 overflow-x-hidden pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
+      <main id="main-content" className="min-w-0 flex-1 overflow-x-hidden pb-[calc(3.75rem+env(safe-area-inset-bottom))] md:pb-0">
         {children}
       </main>
 
@@ -133,9 +133,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 aria-current={isActive ? 'page' : undefined}
-                className={`flex min-h-[4.5rem] min-w-0 flex-col items-center justify-center gap-1 px-1 text-[0.625rem] font-semibold leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white ${isActive ? 'bg-white text-black' : 'text-white/65 hover:bg-white/10 hover:text-white'}`}
+                className={`flex min-h-[3.75rem] min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-[0.5625rem] font-semibold leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white ${isActive ? 'bg-white text-black' : 'text-white/65 hover:bg-white/10 hover:text-white'}`}
               >
-                <Icon size={20} strokeWidth={isActive ? 2.4 : 1.8} aria-hidden="true" />
+                <Icon size={18} strokeWidth={isActive ? 2.4 : 1.8} aria-hidden="true" />
                 <span className="max-w-full truncate">{item.label}</span>
               </Link>
             )
