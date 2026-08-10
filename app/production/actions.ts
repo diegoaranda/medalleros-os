@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { OrderStatus } from '@/lib/supabase/database.types'
-import { hasValidEugenioCost, MISSING_EUGENIO_COST_ERROR } from '@/lib/orders/production'
+import { hasValidEugenioCost } from '@/lib/orders/production'
 
 type ActionResult<T = undefined> =
   | { ok: true; data: T }
@@ -92,18 +92,6 @@ export async function updateEugenioCost(orderId: string, value: string): Promise
 export async function setProductionOrderStatus(orderId: string, status: Extract<OrderStatus, 'produccion' | 'listo'>): Promise<ActionResult<{ id: string; status: OrderStatus }>> {
   const { supabase, user } = await requireUser()
   if (!user) return { ok: false, error: 'Tu sesión expiró. Vuelve a iniciar sesión.' }
-
-  if (status === 'listo') {
-    const { data: order, error: orderError } = await (supabase.from('orders') as any)
-      .select('production_cost')
-      .eq('id', orderId)
-      .single()
-
-    if (orderError) return { ok: false, error: 'No se pudo validar el costo de Eugenio.' }
-    if (!hasValidEugenioCost(order.production_cost)) {
-      return { ok: false, error: MISSING_EUGENIO_COST_ERROR }
-    }
-  }
 
   const { data, error } = await (supabase.from('orders') as any)
     .update({ status })

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
 import { PageHeader } from '@/components/ui/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -19,17 +19,28 @@ type ProductionClientProps = {
 
 export function ProductionClient({ productionOrders, reservePercentage, sports, paymentMethods, defaultProductionExpense, error }: ProductionClientProps) {
   const [requestFilter, setRequestFilter] = useState('')
+  const [success, setSuccess] = useState('')
   const normalizedFilter = requestFilter.trim().toLowerCase()
   const filteredProductionOrders = useMemo(
     () => productionOrders.filter((order) => !normalizedFilter || order.request_number.toLowerCase().includes(normalizedFilter)),
     [normalizedFilter, productionOrders],
   )
 
+  useEffect(() => {
+    const showCollectedMessage = (event: Event) => {
+      const message = (event as CustomEvent<{ message?: string }>).detail?.message
+      setSuccess(message || 'Pedido enviado a Entregas.')
+    }
+    window.addEventListener('production-order-collected', showCollectedMessage)
+    return () => window.removeEventListener('production-order-collected', showCollectedMessage)
+  }, [])
+
   return (
     <div className="app-page">
       <PageHeader title="Producción" eyebrow="Cola operativa" description="Costos y pedidos activos con Eugenio" />
 
       {error ? <div role="alert" className="mb-5 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">{error}</div> : null}
+      {success ? <div role="status" className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-800">{success}</div> : null}
 
       <div className="relative mb-6">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
@@ -48,7 +59,7 @@ export function ProductionClient({ productionOrders, reservePercentage, sports, 
         <div className="mb-3 flex items-center justify-between">
           <div>
             <h2 id="production-title" className="section-title">En producción</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Completa la información pendiente antes de pasar a Entregas.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Recoge los pedidos terminados para enviarlos a Entregas.</p>
           </div>
           <span className="numeric rounded-md bg-amber-100 px-2.5 py-1 text-sm font-bold text-amber-800" aria-label={`${filteredProductionOrders.length} pedidos`}>
             {filteredProductionOrders.length}

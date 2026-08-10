@@ -72,7 +72,7 @@ export function EugenioCostEditor({ orderId, initialCost, onUpdated }: EugenioCo
     <>
       <div>
         <p className="text-xs text-muted-foreground">Costo de Eugenio</p>
-        <p className="numeric mt-0.5 font-semibold text-amber-700">{hasCost ? formatMoney(cost) : 'No registrado'}</p>
+        <p className={`numeric mt-0.5 font-semibold ${hasCost ? 'text-amber-700' : 'text-red-700'}`}>{hasCost ? formatMoney(cost) : 'Pendiente'}</p>
         <button
           ref={triggerRef}
           type="button"

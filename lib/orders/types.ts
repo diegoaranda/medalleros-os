@@ -144,7 +144,13 @@ export function findDefaultPaymentMethod(paymentMethods: PaymentMethodOption[]) 
 }
 
 export function formatMoney(value: number | null | undefined) {
-  return `Bs ${Number(value ?? 0).toLocaleString('es-MX', { maximumFractionDigits: 0 })}`
+  const amount = Number(value ?? 0)
+  const hasDecimals = Math.abs(amount % 1) > Number.EPSILON
+
+  return `Bs ${amount.toLocaleString('es-MX', {
+    minimumFractionDigits: hasDecimals ? 2 : 0,
+    maximumFractionDigits: 2,
+  })}`
 }
 
 export function formatDate(value: string | null | undefined) {

@@ -1,7 +1,7 @@
 import { FinancesClient } from '@/components/finances/finances-client'
 import { getCatalogs, getExpenses, getFinancialSettings, getOrderPaymentsAll, getOrders, type OrderWithFinancials } from '@/lib/data/queries'
-import { calculateFinanceMetrics, endOfToday, startOfMonth, type Expense, type Payment } from '@/lib/finance/metrics'
 import { DEFAULT_RESERVE_PERCENTAGE } from '@/lib/finance/calculations'
+import type { Expense, Payment } from '@/lib/finance/metrics'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,19 +25,17 @@ export default async function FinancesPage() {
     expenses = expenseRows
     reservePercentage = Number(settings.reserve_percentage)
   } catch {
-    error = 'No se pudieron cargar las finanzas desde Supabase.'
+    error = 'No se pudieron cargar los gastos desde Supabase.'
   }
 
-  const monthRange = { from: startOfMonth(), to: endOfToday() }
-  const metrics = calculateFinanceMetrics(orders, payments, expenses, monthRange, reservePercentage)
-  const monthExpenses = expenses.filter((expense) => new Date(expense.expense_date) >= monthRange.from && new Date(expense.expense_date) <= monthRange.to)
   const catalogError = catalogs.errors.length > 0 ? 'Algunas categorías no pudieron cargarse desde Supabase.' : ''
 
   return (
     <FinancesClient
-      expenses={monthExpenses}
+      orders={orders}
+      payments={payments}
+      expenses={expenses}
       categories={catalogs.expenseCategories}
-      metrics={metrics}
       reservePercentage={reservePercentage}
       error={error || catalogError}
     />

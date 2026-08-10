@@ -12,7 +12,7 @@ const navItems = [
   { href: '/orders', label: 'Pedidos', icon: ShoppingCart },
   { href: '/production', label: 'Producción', icon: Wrench },
   { href: '/deliveries', label: 'Entregas', icon: Truck },
-  { href: '/finances', label: 'Finanzas', icon: DollarSign },
+  { href: '/finances', label: 'Gastos', icon: DollarSign },
   { href: '/reports', label: 'Reportes', icon: BarChart3 },
   { href: '/settings', label: 'Configuración', icon: Settings },
 ]

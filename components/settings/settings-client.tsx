@@ -34,7 +34,7 @@ const tabs = [
   { id: 'sports', label: 'Deportes', singular: 'deporte' },
   { id: 'payments', label: 'Métodos de Pago', singular: 'método de pago' },
   { id: 'expenses', label: 'Categorías de Gasto', singular: 'categoría de gasto' },
-  { id: 'financial', label: 'Finanzas', singular: 'ajuste financiero' },
+  { id: 'financial', label: 'Gastos', singular: 'ajuste financiero' },
 ] as const
 
 function emptyForm(): FormState {

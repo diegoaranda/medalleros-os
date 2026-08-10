@@ -31,7 +31,9 @@ export function endOfToday(date = new Date()) {
 
 export function isInRange(value: string | null | undefined, range: DateRange) {
   if (!value) return false
-  const date = new Date(value)
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T00:00:00`)
+    : new Date(value)
   return date >= range.from && date <= range.to
 }
 

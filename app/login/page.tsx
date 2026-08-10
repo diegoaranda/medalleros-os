@@ -30,7 +30,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <div className="mx-auto flex min-h-[calc(100dvh-3rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-full max-w-sm flex-col justify-center">
         <div className="mb-8">
           <BrandLogo className="w-64 max-w-full" priority />
-          <p className="mt-3 max-w-xs text-sm leading-5 text-white/55">Pedidos, producción y finanzas en un solo lugar.</p>
+          <p className="mt-3 max-w-xs text-sm leading-5 text-white/55">Pedidos, producción y gastos en un solo lugar.</p>
         </div>
 
         <form action={signInWithPassword} className="rounded-xl bg-white p-5 text-black sm:p-6">

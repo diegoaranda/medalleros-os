@@ -43,6 +43,7 @@ export function ProductionCard({ order, reservePercentage, sports, paymentMethod
         return
       }
 
+      window.dispatchEvent(new CustomEvent('production-order-collected', { detail: { message: 'Pedido enviado a Entregas.' } }))
       router.refresh()
       setShowAdvanceConfirmation(false)
     })
@@ -95,9 +96,9 @@ export function ProductionCard({ order, reservePercentage, sports, paymentMethod
         ) : null}
 
         {!hasCost ? (
-          <div id={`production-cost-warning-${order.id}`} className="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          <div id={`production-cost-warning-${order.id}`} role="status" className="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-800">
             <AlertTriangle size={16} className="mt-0.5" />
-            <span>Registra el costo de Eugenio para pasar este pedido a Entregas.</span>
+            <span>Costo Eugenio pendiente</span>
           </div>
         ) : null}
 
@@ -113,11 +114,11 @@ export function ProductionCard({ order, reservePercentage, sports, paymentMethod
           </Button>
           <Button
             onClick={() => setShowAdvanceConfirmation(true)}
-            disabled={isPending || !hasCost}
+            disabled={isPending}
             aria-describedby={!hasCost ? `production-cost-warning-${order.id}` : undefined}
           >
             <ChevronRight size={16} className="mr-1" />
-            Pasar a entregas
+            Recoger
           </Button>
         </div>
       </article>
@@ -135,7 +136,7 @@ export function ProductionCard({ order, reservePercentage, sports, paymentMethod
             className="w-full bg-card sm:max-w-md sm:rounded-xl sm:border sm:border-border"
           >
             <div className="flex items-center justify-between border-b border-border px-4 py-4 sm:px-5">
-              <h2 id={`advance-order-title-${order.id}`} className="text-xl font-bold tracking-[-0.025em]">¿Pasar pedido a Entregas?</h2>
+              <h2 id={`advance-order-title-${order.id}`} className="text-xl font-bold tracking-[-0.025em]">¿Recoger este pedido?</h2>
               <button
                 onClick={() => setShowAdvanceConfirmation(false)}
                 className="flex size-11 items-center justify-center rounded-lg hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -148,7 +149,7 @@ export function ProductionCard({ order, reservePercentage, sports, paymentMethod
             </div>
             <div className="space-y-5 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-5">
               <p id={`advance-order-description-${order.id}`} className="text-sm text-muted-foreground">
-                El pedido saldrá de Producción y aparecerá en el módulo Entregas.
+                El pedido saldrá de Producción y pasará al módulo Entregas.
               </p>
               {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
               <div className="flex gap-3">
@@ -156,7 +157,7 @@ export function ProductionCard({ order, reservePercentage, sports, paymentMethod
                   Cancelar
                 </Button>
                 <Button type="button" onClick={advanceStatus} className="flex-1" disabled={isPending}>
-                  {isPending ? 'Guardando…' : 'Pasar a entregas'}
+                  {isPending ? 'Guardando…' : 'Confirmar recogida'}
                 </Button>
               </div>
             </div>

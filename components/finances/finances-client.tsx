@@ -1,14 +1,15 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/ui/page-header'
 import { ExpenseList } from '@/components/finances/expense-list'
 import { FinanceCard } from '@/components/finances/finance-card'
 import { RegisterExpenseModal } from '@/components/finances/register-expense-modal'
 import type { Database } from '@/lib/supabase/database.types'
-import type { Expense } from '@/lib/finance/metrics'
+import type { OrderWithFinancials } from '@/lib/data/queries'
+import { calculateFinanceMetrics, endOfToday, isInRange, type Expense, type Payment } from '@/lib/finance/metrics'
 import { formatMoney } from '@/lib/orders/types'
 
 type ExpenseCategory = Database['public']['Tables']['expense_categories']['Row']
@@ -32,40 +33,57 @@ function FinanceMetric({ label, value, tone }: { label: string; value: string; t
 }
 
 type FinancesClientProps = {
+  orders: OrderWithFinancials[]
+  payments: Payment[]
   expenses: Expense[]
   categories: ExpenseCategory[]
-  metrics: {
-    sold: number
-    collected: number
-    pending: number
-    productionCosts: number
-    productionExpenses: number
-    grossProfit: number
-    reserveAmount: number
-    netProfit: number
-    expenses: number
-    availableProductionExpenseFund: number
-  }
   reservePercentage: number
   error?: string
 }
 
-export function FinancesClient({ expenses, categories, metrics, reservePercentage, error }: FinancesClientProps) {
+function currentMonthValue() {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+}
+
+function getMonthRange(monthValue: string) {
+  const [year, month] = monthValue.split('-').map(Number)
+  const from = new Date(year, month - 1, 1)
+  const monthEnd = new Date(year, month, 0, 23, 59, 59, 999)
+  const now = endOfToday()
+  return { from, to: monthEnd > now ? now : monthEnd }
+}
+
+export function FinancesClient({ orders, payments, expenses, categories, reservePercentage, error }: FinancesClientProps) {
   const [showExpenseModal, setShowExpenseModal] = useState(false)
+  const [month, setMonth] = useState(currentMonthValue)
+  const [categoryId, setCategoryId] = useState('all')
+  const range = useMemo(() => getMonthRange(month), [month])
+  const selectedCategory = categories.find((category) => category.id === categoryId)
+  const filteredExpenses = useMemo(() => expenses.filter((expense) => {
+    const isInPeriod = isInRange(expense.expense_date, range)
+    const isInCategory = categoryId === 'all' || expense.category_id === categoryId || expense.category_name === selectedCategory?.name
+    return isInPeriod && isInCategory
+  }), [categoryId, expenses, range, selectedCategory?.name])
+  const metrics = useMemo(
+    () => calculateFinanceMetrics(orders, payments, filteredExpenses, range, reservePercentage),
+    [filteredExpenses, orders, payments, range, reservePercentage],
+  )
   const expensesByCategory = useMemo(() => categories.map((category) => {
-    const categoryExpenses = expenses.filter((expense) => expense.category_id === category.id || expense.category_name === category.name)
+    const categoryExpenses = filteredExpenses.filter((expense) => expense.category_id === category.id || expense.category_name === category.name)
     return {
       category: category.name,
       total: categoryExpenses.reduce((total, expense) => total + Number(expense.amount), 0),
       count: categoryExpenses.length,
     }
-  }), [categories, expenses])
+  }).filter((item) => categoryId === 'all' || item.count > 0), [categories, categoryId, filteredExpenses])
+  const isDefaultFilter = month === currentMonthValue() && categoryId === 'all'
 
   return (
     <div className="app-page">
       <PageHeader
-        title="Finanzas"
-        eyebrow="Este mes"
+        title="Gastos"
+        eyebrow="Control operativo"
         description="Ventas, cobros, ganancia y control del fondo de producción"
         action={
           <Button onClick={() => setShowExpenseModal(true)} size="lg" className="w-full sm:w-auto" disabled={categories.length === 0}>
@@ -77,6 +95,29 @@ export function FinancesClient({ expenses, categories, metrics, reservePercentag
 
       {error ? <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive mb-6">{error}</div> : null}
       {categories.length === 0 ? <div className="rounded-lg border border-border bg-muted/50 p-4 text-sm text-muted-foreground mb-6">Configura categorías de gasto para registrar gastos.</div> : null}
+
+      <section className="surface mb-6 p-4 sm:p-5" aria-labelledby="expense-filters-title">
+        <div className="mb-3">
+          <h2 id="expense-filters-title" className="font-semibold text-foreground">Filtros de gastos</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Consulta el historial por mes y categoría.</p>
+        </div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(11rem,0.7fr)_minmax(13rem,1fr)_auto] md:items-end">
+          <label>
+            <span className="field-label">Período</span>
+            <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} className="field-control" />
+          </label>
+          <label>
+            <span className="field-label">Tipo de gasto</span>
+            <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)} className="field-control">
+              <option value="all">Todas las categorías</option>
+              {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+            </select>
+          </label>
+          <Button type="button" variant="outline" onClick={() => { setMonth(currentMonthValue()); setCategoryId('all') }} disabled={isDefaultFilter}>
+            <RotateCcw size={16} /> Limpiar filtros
+          </Button>
+        </div>
+      </section>
 
       <section className="mb-8 space-y-4" aria-labelledby="finance-summary-title">
         <h2 id="finance-summary-title" className="sr-only">Resumen financiero</h2>
@@ -107,15 +148,15 @@ export function FinancesClient({ expenses, categories, metrics, reservePercentag
 
       <div className="mb-3">
         <h2 className="text-xl font-semibold text-foreground">Gastos por categoría</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Distribución de gastos reales del mes.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Distribución de gastos reales del período seleccionado.</p>
       </div>
       <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {expensesByCategory.map((item) => <FinanceCard key={item.category} title={item.category} amount={item.total} count={item.count} />)}
       </div>
 
       <section className="surface overflow-hidden" aria-labelledby="recent-expenses-title">
-        <div className="border-b border-border px-4 py-4 sm:px-5"><h2 id="recent-expenses-title" className="section-title">Gastos recientes</h2></div>
-        <ExpenseList expenses={expenses} />
+        <div className="border-b border-border px-4 py-4 sm:px-5"><h2 id="recent-expenses-title" className="section-title">Gastos del período</h2></div>
+        <ExpenseList expenses={filteredExpenses} />
       </section>
 
       <RegisterExpenseModal open={showExpenseModal} onOpenChange={setShowExpenseModal} categories={categories} />

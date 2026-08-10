@@ -26,6 +26,7 @@ export function DeliveryCard({ order, paymentMethods, sports, defaultProductionE
   const whatsappNumber = phoneDigits.length === 8 ? `591${phoneDigits}` : phoneDigits
   const whatsappHref = whatsappNumber.length >= 11 ? `https://wa.me/${whatsappNumber}` : null
   const hasBalance = Number(order.balance_amount) > 0
+  const hasProductionCost = Number(order.production_cost) > 0
 
   return (
     <>
@@ -42,7 +43,7 @@ export function DeliveryCard({ order, paymentMethods, sports, defaultProductionE
           </div>
           <div className="flex flex-wrap items-end gap-x-4 gap-y-1 text-sm lg:justify-end">
             <p className="text-xs text-muted-foreground">Total <span className="numeric font-medium text-foreground">{formatMoney(order.total_amount)}</span></p>
-            <p className="text-xs text-muted-foreground">Costo <span className="numeric font-medium text-foreground">{formatMoney(order.production_cost)}</span></p>
+            <p className="text-xs text-muted-foreground">Costo Eugenio <span className={`numeric font-semibold ${hasProductionCost ? 'text-foreground' : 'text-red-700'}`}>{hasProductionCost ? formatMoney(order.production_cost) : 'pendiente'}</span></p>
             <div className="min-w-24">
               <p className={`text-xs font-semibold ${hasBalance ? 'text-destructive' : 'text-emerald-700'}`}>{hasBalance ? 'Saldo pendiente' : 'Pagado'}</p>
               <p className={`numeric text-lg font-bold leading-tight ${hasBalance ? 'text-destructive' : 'text-emerald-700'}`}>{formatMoney(order.balance_amount)}</p>
