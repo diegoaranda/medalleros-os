@@ -4,7 +4,13 @@ import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Edit2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { listOrderPayments, registerOrderPayment, updateOrderStatus } from '@/app/orders/actions'
+import {
+  deleteOrderPayment,
+  listOrderPayments,
+  registerOrderPayment,
+  updateOrderPayment,
+  updateOrderStatus,
+} from '@/app/orders/actions'
 import type { OrderWithFinancials } from '@/lib/data/queries'
 import type { CatalogOption, OrderPayment, PaymentFormValues, PaymentMethodOption } from '@/lib/orders/types'
 import {
@@ -45,6 +51,16 @@ function emptyPaymentForm(balance: number, paymentMethods: PaymentMethodOption[]
   }
 }
 
+function paymentFormFrom(payment: OrderPayment): PaymentFormValues {
+  return {
+    amount: String(payment.amount),
+    payment_method_id: payment.payment_method_id ?? '',
+    payment_method_name: payment.payment_method_name,
+    paid_at: payment.paid_at.slice(0, 10),
+    notes: payment.notes ?? '',
+  }
+}
+
 export function OrderDetailModal({
   order,
   open,
@@ -63,8 +79,14 @@ export function OrderDetailModal({
   const [paymentsError, setPaymentsError] = useState('')
   const [statusError, setStatusError] = useState('')
   const [paymentError, setPaymentError] = useState('')
+  const [paymentCorrectionError, setPaymentCorrectionError] = useState('')
+  const [paymentCorrectionMessage, setPaymentCorrectionMessage] = useState('')
+  const [editingPayment, setEditingPayment] = useState<OrderPayment | null>(null)
+  const [deletingPayment, setDeletingPayment] = useState<OrderPayment | null>(null)
+  const [editPaymentForm, setEditPaymentForm] = useState<PaymentFormValues | null>(null)
   const [isStatusPending, startStatusTransition] = useTransition()
   const [isPaymentPending, startPaymentTransition] = useTransition()
+  const [isCorrectionPending, startCorrectionTransition] = useTransition()
   const [paymentForm, setPaymentForm] = useState<PaymentFormValues>(() => emptyPaymentForm(order.balance_amount, paymentMethods))
 
   useEffect(() => {
@@ -72,6 +94,10 @@ export function OrderDetailModal({
     setActiveTab(initialTab)
     setStatusError('')
     setPaymentError('')
+    setPaymentCorrectionError('')
+    setPaymentCorrectionMessage('')
+    setEditingPayment(null)
+    setDeletingPayment(null)
     setPaymentForm(emptyPaymentForm(order.balance_amount, paymentMethods))
   }, [initialTab, open, order.balance_amount, paymentMethods])
 
@@ -107,6 +133,10 @@ export function OrderDetailModal({
   const nextPaymentAmount = Number.isFinite(parsedNextPayment) ? parsedNextPayment : 0
   const paymentExceedsBalance = nextPaymentAmount > currentBalance
   const nextBalance = Math.max(currentBalance - nextPaymentAmount, 0)
+  const parsedEditedAmount = parseMoneyInput(editPaymentForm?.amount ?? '')
+  const otherPaymentsTotal = editingPayment ? paidAmount - Number(editingPayment.amount) : paidAmount
+  const maximumEditedPayment = Math.max(Number(order.total_amount) - otherPaymentsTotal, 0)
+  const editedPaymentExceedsMaximum = Number.isFinite(parsedEditedAmount) && parsedEditedAmount > maximumEditedPayment
 
   if (!open) return null
 
@@ -148,6 +178,61 @@ export function OrderDetailModal({
 
       setPayments((current) => [result.data, ...current])
       setPaymentForm(emptyPaymentForm(nextBalance, paymentMethods))
+      router.refresh()
+    })
+  }
+
+  const openPaymentEditor = (payment: OrderPayment) => {
+    setPaymentCorrectionError('')
+    setPaymentCorrectionMessage('')
+    setEditingPayment(payment)
+    setEditPaymentForm(paymentFormFrom(payment))
+  }
+
+  const handleEditPaymentMethodChange = (paymentMethodId: string) => {
+    if (!editPaymentForm) return
+    const selectedMethod = paymentMethods.find((method) => method.id === paymentMethodId)
+    setEditPaymentForm({
+      ...editPaymentForm,
+      payment_method_id: paymentMethodId,
+      payment_method_name: selectedMethod?.name ?? '',
+    })
+  }
+
+  const handlePaymentUpdate = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!editingPayment || !editPaymentForm) return
+    setPaymentCorrectionError('')
+
+    startCorrectionTransition(async () => {
+      const result = await updateOrderPayment(order.id, editingPayment.id, editPaymentForm)
+      if (!result.ok) {
+        setPaymentCorrectionError(result.error)
+        return
+      }
+
+      setPayments((current) => current.map((payment) => (payment.id === result.data.id ? result.data : payment)))
+      setEditingPayment(null)
+      setEditPaymentForm(null)
+      setPaymentCorrectionMessage('Pago actualizado correctamente.')
+      router.refresh()
+    })
+  }
+
+  const handlePaymentDelete = () => {
+    if (!deletingPayment) return
+    setPaymentCorrectionError('')
+
+    startCorrectionTransition(async () => {
+      const result = await deleteOrderPayment(order.id, deletingPayment.id)
+      if (!result.ok) {
+        setPaymentCorrectionError(result.error)
+        return
+      }
+
+      setPayments((current) => current.filter((payment) => payment.id !== deletingPayment.id))
+      setDeletingPayment(null)
+      setPaymentCorrectionMessage('Pago eliminado correctamente.')
       router.refresh()
     })
   }
@@ -285,6 +370,18 @@ export function OrderDetailModal({
                   </div>
                 </div>
 
+                {normalizeOrderStatus(order.status) === 'entregado' && currentBalance > 0 ? (
+                  <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm font-medium text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+                    Este pedido está entregado y mantiene un saldo pendiente de {formatMoney(currentBalance)}.
+                  </div>
+                ) : null}
+
+                {paymentCorrectionMessage ? (
+                  <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-300">
+                    {paymentCorrectionMessage}
+                  </p>
+                ) : null}
+
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">Pagos registrados para este pedido</p>
                   {paymentsLoading ? <p className="text-sm text-muted-foreground">Cargando pagos...</p> : null}
@@ -293,12 +390,27 @@ export function OrderDetailModal({
                     <div className="rounded-lg border border-border p-4 text-center text-sm text-muted-foreground">Aún no hay pagos registrados.</div>
                   ) : null}
                   {payments.map((payment) => (
-                    <div key={payment.id} className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900/30 rounded-lg p-3">
+                    <div key={payment.id} className="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-900/30 dark:bg-green-900/10">
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-medium text-foreground">{payment.payment_method_name}</span>
                         <span className="font-bold text-green-600 dark:text-green-400">+{formatMoney(payment.amount)}</span>
                       </div>
                       <p className="text-xs text-muted-foreground">{formatDate(payment.paid_at)}{payment.notes ? ` · ${payment.notes}` : ''}</p>
+                      <div className="mt-3 flex gap-2 border-t border-green-200 pt-3 dark:border-green-900/30">
+                        <Button type="button" variant="outline" size="sm" onClick={() => openPaymentEditor(payment)}>Editar</Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            setPaymentCorrectionError('')
+                            setPaymentCorrectionMessage('')
+                            setDeletingPayment(payment)
+                          }}
+                        >
+                          Eliminar
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -388,6 +500,57 @@ export function OrderDetailModal({
         defaultProductionExpense={defaultProductionExpense}
         order={order}
       />
+
+      {editingPayment && editPaymentForm ? (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
+          <form onSubmit={handlePaymentUpdate} role="dialog" aria-modal="true" aria-labelledby="edit-payment-title" className="w-full space-y-4 bg-card p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:max-w-md sm:rounded-xl sm:border sm:border-border sm:pb-5">
+            <div>
+              <h2 id="edit-payment-title" className="text-xl font-bold">Editar pago</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Monto máximo disponible: {formatMoney(maximumEditedPayment)}</p>
+            </div>
+            <label className="block text-sm font-medium">
+              <span className="mb-1.5 block">Monto (Bs)</span>
+              <input type="text" inputMode="decimal" value={editPaymentForm.amount} onChange={(event) => setEditPaymentForm({ ...editPaymentForm, amount: event.target.value })} className="field-control" required autoFocus />
+            </label>
+            <label className="block text-sm font-medium">
+              <span className="mb-1.5 block">Método de pago</span>
+              <select value={editPaymentForm.payment_method_id} onChange={(event) => handleEditPaymentMethodChange(event.target.value)} className="field-control" required>
+                <option value="">Método de pago</option>
+                {paymentMethods.map((method) => <option key={method.id} value={method.id}>{method.name}</option>)}
+              </select>
+            </label>
+            <label className="block text-sm font-medium">
+              <span className="mb-1.5 block">Fecha</span>
+              <input type="date" value={editPaymentForm.paid_at} onChange={(event) => setEditPaymentForm({ ...editPaymentForm, paid_at: event.target.value })} className="field-control" required />
+            </label>
+            <label className="block text-sm font-medium">
+              <span className="mb-1.5 block">Nota <span className="font-normal text-muted-foreground">(opcional)</span></span>
+              <input type="text" value={editPaymentForm.notes} onChange={(event) => setEditPaymentForm({ ...editPaymentForm, notes: event.target.value })} className="field-control" />
+            </label>
+            {editedPaymentExceedsMaximum ? <p role="alert" className="text-sm text-destructive">El pago supera el saldo disponible del pedido.</p> : null}
+            {paymentCorrectionError ? <p role="alert" className="text-sm text-destructive">{paymentCorrectionError}</p> : null}
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => { setEditingPayment(null); setEditPaymentForm(null) }} disabled={isCorrectionPending}>Cancelar</Button>
+              <Button type="submit" className="flex-1" disabled={isCorrectionPending || editedPaymentExceedsMaximum}>{isCorrectionPending ? 'Guardando…' : 'Guardar cambios'}</Button>
+            </div>
+          </form>
+        </div>
+      ) : null}
+
+      {deletingPayment ? (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
+          <div role="alertdialog" aria-modal="true" aria-labelledby="delete-payment-title" aria-describedby="delete-payment-description" className="w-full bg-card p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:max-w-md sm:rounded-xl sm:border sm:border-border sm:pb-5">
+            <h2 id="delete-payment-title" className="text-xl font-bold">¿Eliminar este pago?</h2>
+            <p id="delete-payment-description" className="mt-3 text-sm text-muted-foreground">Se eliminará el registro de pago y el saldo pendiente del pedido se recalculará automáticamente.</p>
+            <p className="numeric mt-4 rounded-lg border border-destructive/20 bg-destructive/5 p-3 font-semibold">Pago a eliminar: {formatMoney(deletingPayment.amount)}</p>
+            {paymentCorrectionError ? <p role="alert" className="mt-3 text-sm text-destructive">{paymentCorrectionError}</p> : null}
+            <div className="mt-5 flex gap-3">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setDeletingPayment(null)} disabled={isCorrectionPending}>Cancelar</Button>
+              <Button type="button" variant="destructive" className="flex-1" onClick={handlePaymentDelete} disabled={isCorrectionPending}>{isCorrectionPending ? 'Eliminando…' : 'Eliminar pago'}</Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   )
 }

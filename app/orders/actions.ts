@@ -6,6 +6,7 @@ import type { Database, DeliveryType, OrderStatus } from '@/lib/supabase/databas
 import type { ActionResult, OrderFormValues, PaymentFormValues, OrderPayment } from '@/lib/orders/types'
 import { deliveryTypes, normalizeDeliveryType, orderStatuses } from '@/lib/orders/types'
 import { parseMoneyInput } from '@/lib/money'
+import { validatePaymentCorrection } from '@/lib/orders/payment-corrections'
 
 type OrderInsert = Database['public']['Tables']['orders']['Insert']
 type OrderUpdate = Database['public']['Tables']['orders']['Update']
@@ -231,6 +232,89 @@ export async function registerOrderPayment(orderId: string, values: PaymentFormV
     .single()
 
   if (error) return { ok: false, error: 'No se pudo registrar el pago.' }
+
+  revalidateOrderSurfaces()
+  return { ok: true, data }
+}
+
+export async function updateOrderPayment(
+  orderId: string,
+  paymentId: string,
+  values: PaymentFormValues,
+): Promise<ActionResult<OrderPayment>> {
+  const { supabase, user } = await requireUser()
+  if (!user) return { ok: false, error: 'Tu sesión expiró. Vuelve a iniciar sesión.' }
+
+  const paymentMethodName = cleanText(values.payment_method_name)
+  if (!paymentMethodName) return { ok: false, error: 'Selecciona un método de pago.' }
+  if (!values.paid_at) return { ok: false, error: 'Selecciona una fecha válida.' }
+
+  const [{ data: order, error: orderError }, { data: payment, error: paymentError }] = await Promise.all([
+    (supabase.from('orders') as any).select('id, total_amount').eq('id', orderId).single(),
+    (supabase.from('order_payments') as any).select('id, order_id').eq('id', paymentId).single(),
+  ])
+
+  if (orderError || !order) return { ok: false, error: 'El pedido ya no existe o no se pudo validar.' }
+  if (paymentError || !payment) return { ok: false, error: 'El pago ya no existe o no se pudo validar.' }
+  if (payment.order_id !== orderId) return { ok: false, error: 'El pago no pertenece a este pedido.' }
+
+  const { data: otherPayments, error: otherPaymentsError } = await (supabase.from('order_payments') as any)
+    .select('amount')
+    .eq('order_id', orderId)
+    .neq('id', paymentId)
+
+  if (otherPaymentsError) return { ok: false, error: 'No se pudo validar el saldo del pedido.' }
+
+  const otherPaymentsTotal = (otherPayments ?? []).reduce(
+    (sum: number, otherPayment: { amount: number }) => sum + Number(otherPayment.amount),
+    0,
+  )
+  const validation = validatePaymentCorrection(values.amount, Number(order.total_amount), otherPaymentsTotal)
+  if (!validation.ok) return validation
+
+  const paidAt = new Date(`${values.paid_at}T12:00:00`)
+  if (Number.isNaN(paidAt.getTime())) return { ok: false, error: 'Selecciona una fecha válida.' }
+
+  const { data, error } = await (supabase.from('order_payments') as any)
+    .update({
+      amount: validation.amount,
+      payment_method_id: values.payment_method_id || null,
+      payment_method_name: paymentMethodName,
+      paid_at: paidAt.toISOString(),
+      notes: cleanText(values.notes) || null,
+    })
+    .eq('id', paymentId)
+    .eq('order_id', orderId)
+    .select('*')
+    .single()
+
+  if (error || !data) return { ok: false, error: 'No se pudo actualizar el pago.' }
+
+  revalidateOrderSurfaces()
+  return { ok: true, data }
+}
+
+export async function deleteOrderPayment(orderId: string, paymentId: string): Promise<ActionResult<{ id: string }>> {
+  const { supabase, user } = await requireUser()
+  if (!user) return { ok: false, error: 'Tu sesión expiró. Vuelve a iniciar sesión.' }
+
+  const [{ data: order, error: orderError }, { data: payment, error: paymentError }] = await Promise.all([
+    (supabase.from('orders') as any).select('id').eq('id', orderId).single(),
+    (supabase.from('order_payments') as any).select('id, order_id').eq('id', paymentId).single(),
+  ])
+
+  if (orderError || !order) return { ok: false, error: 'El pedido ya no existe o no se pudo validar.' }
+  if (paymentError || !payment) return { ok: false, error: 'El pago ya no existe o no se pudo validar.' }
+  if (payment.order_id !== orderId) return { ok: false, error: 'El pago no pertenece a este pedido.' }
+
+  const { data, error } = await (supabase.from('order_payments') as any)
+    .delete()
+    .eq('id', paymentId)
+    .eq('order_id', orderId)
+    .select('id')
+    .single()
+
+  if (error || !data) return { ok: false, error: 'No se pudo eliminar el pago.' }
 
   revalidateOrderSurfaces()
   return { ok: true, data }
