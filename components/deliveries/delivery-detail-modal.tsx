@@ -1,6 +1,6 @@
 'use client'
 
-import { X } from 'lucide-react'
+import { AlertTriangle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { OrderWithFinancials } from '@/lib/data/queries'
 import {
@@ -55,6 +55,8 @@ export function DeliveryDetailModal({ order, open, onOpenChange, onEdit }: Deliv
             <div className="flex justify-between"><span className="text-muted-foreground">Pagado</span><span className="font-semibold">{formatMoney(order.paid_amount)}</span></div>
             <div className="border-t border-border pt-2 flex justify-between"><span className="font-semibold">Saldo</span><span className={`font-bold ${order.balance_amount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>{formatMoney(order.balance_amount)}</span></div>
           </div>
+
+          {Number(order.production_cost) <= 0 ? <div role="status" className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800"><AlertTriangle size={16} />Costo Eugenio pendiente</div> : null}
 
           <div className="space-y-1 text-sm">
             <p><span className="text-muted-foreground">Entrega:</span> <span className="font-medium">{deliveryTypeLabels[normalizeDeliveryType(order.delivery_type)]}</span></p>

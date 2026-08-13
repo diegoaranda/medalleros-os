@@ -24,6 +24,8 @@ function matchesDeliverySearch(order: OrderWithFinancials, search: string) {
 
 function sortOperationally(orders: OrderWithFinancials[]) {
   return [...orders].sort((left, right) => {
+    const statusDifference = Number(right.status === 'listo') - Number(left.status === 'listo')
+    if (statusDifference !== 0) return statusDifference
     const balanceDifference = Number(right.balance_amount > 0) - Number(left.balance_amount > 0)
     if (balanceDifference !== 0) return balanceDifference
     return right.request_number.localeCompare(left.request_number, 'es', { numeric: true })
@@ -50,6 +52,8 @@ export function DeliveriesClient({ readyOrders, deliveredOrders, paymentMethods,
   const visibleOrders = showDelivered ? [...pendingByTab, ...deliveredByTab] : pendingByTab
   const pendingLocalCount = localOrders.length
   const pendingShippingCount = shippingOrders.length
+  const wrappedCount = filteredReadyOrders.filter((order) => order.status === 'listo').length
+  const wrappingCount = filteredReadyOrders.filter((order) => order.status === 'envolver').length
 
   useEffect(() => {
     const handleDelivered = () => {
@@ -57,12 +61,20 @@ export function DeliveriesClient({ readyOrders, deliveredOrders, paymentMethods,
       window.setTimeout(() => setSuccess(''), 5000)
     }
     window.addEventListener('order-delivered-success', handleDelivered)
-    return () => window.removeEventListener('order-delivered-success', handleDelivered)
+    const handleWrapped = () => {
+      setSuccess('Pedido envuelto y listo para entregar.')
+      window.setTimeout(() => setSuccess(''), 5000)
+    }
+    window.addEventListener('order-wrapped-success', handleWrapped)
+    return () => {
+      window.removeEventListener('order-delivered-success', handleDelivered)
+      window.removeEventListener('order-wrapped-success', handleWrapped)
+    }
   }, [])
 
   return (
     <div className="app-page">
-      <PageHeader title="Entregas" eyebrow="Pedidos listos" description={`${readyOrders.length} pedido${readyOrders.length !== 1 ? 's' : ''} pendiente${readyOrders.length !== 1 ? 's' : ''} de entrega`} />
+      <PageHeader title="Entregas" eyebrow="Flujo operativo" description={`${readyOrders.length} pedido${readyOrders.length !== 1 ? 's' : ''}: ${wrappedCount} envuelto${wrappedCount !== 1 ? 's' : ''} · ${wrappingCount} por envolver`} />
 
       {error ? <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">{error}</div> : null}
       {paymentMethods.length === 0 ? <div className="mt-6 rounded-lg border border-border bg-muted/50 p-4 text-sm text-muted-foreground">Configura métodos de pago para registrar cobros desde Entregas.</div> : null}
@@ -86,8 +98,8 @@ export function DeliveriesClient({ readyOrders, deliveredOrders, paymentMethods,
           <p className="text-xs text-muted-foreground">Saldo pendiente</p>
           <p className="numeric mt-1 break-words text-lg font-bold text-red-700 sm:text-2xl">{formatMoney(pendingBalance)}</p>
         </div>
-        <div className="p-3 sm:p-4"><p className="text-xs text-muted-foreground">Locales</p><p className="numeric mt-1 text-xl font-bold sm:text-2xl">{pendingLocalCount}</p></div>
-        <div className="p-3 sm:p-4"><p className="text-xs text-muted-foreground">Envíos</p><p className="numeric mt-1 text-xl font-bold sm:text-2xl">{pendingShippingCount}</p></div>
+        <div className="p-3 sm:p-4"><p className="text-xs text-muted-foreground">Envueltos</p><p className="numeric mt-1 text-xl font-bold text-emerald-700 sm:text-2xl">{wrappedCount}</p></div>
+        <div className="p-3 sm:p-4"><p className="text-xs text-muted-foreground">Por envolver</p><p className="numeric mt-1 text-xl font-bold text-amber-700 sm:text-2xl">{wrappingCount}</p></div>
       </div>
 
       <div className="mb-4 grid grid-cols-2 border-b border-border" role="tablist" aria-label="Categorías de entrega">
@@ -95,7 +107,7 @@ export function DeliveriesClient({ readyOrders, deliveredOrders, paymentMethods,
       </div>
 
       <section id="delivery-tab-panel" role="tabpanel" aria-labelledby={`delivery-tab-${activeTab}`} className="surface divide-y divide-border overflow-hidden">
-        {visibleOrders.length > 0 ? visibleOrders.map((order) => <DeliveryCard key={order.id} order={order} paymentMethods={paymentMethods} sports={sports} defaultProductionExpense={defaultProductionExpense} delivered={order.status === 'entregado'} />) : <EmptyState title={`No hay ${activeTab === 'local' ? 'entregas locales' : 'envíos'} para mostrar.`} description={showDelivered ? 'No hay pedidos que coincidan con los filtros activos.' : 'Los pedidos listos aparecerán aquí.'} />}
+        {visibleOrders.length > 0 ? visibleOrders.map((order) => <DeliveryCard key={order.id} order={order} paymentMethods={paymentMethods} sports={sports} defaultProductionExpense={defaultProductionExpense} delivered={order.status === 'entregado'} />) : <EmptyState title={`No hay ${activeTab === 'local' ? 'entregas locales' : 'envíos'} para mostrar.`} description={showDelivered ? 'No hay pedidos que coincidan con los filtros activos.' : 'Los pedidos recogidos aparecerán aquí.'} />}
       </section>
     </div>
   )

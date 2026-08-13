@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Edit2, X } from 'lucide-react'
+import { AlertTriangle, Edit2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   deleteOrderPayment,
@@ -321,6 +321,13 @@ export function OrderDetailModal({
                     </span>
                   </div>
                 </div>
+
+                {Number(order.production_cost) <= 0 ? (
+                  <div role="status" className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800">
+                    <AlertTriangle size={16} className="shrink-0" />
+                    Costo Eugenio pendiente
+                  </div>
+                ) : null}
 
                 <div className="space-y-2">
                   <p className="text-sm font-semibold text-foreground">Entrega</p>

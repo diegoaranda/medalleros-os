@@ -1,6 +1,6 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
-export type OrderStatus = 'nuevo' | 'diseno' | 'produccion' | 'listo' | 'entregado' | 'cancelado'
+export type OrderStatus = 'nuevo' | 'diseno' | 'produccion' | 'envolver' | 'listo' | 'entregado' | 'cancelado'
 export type DeliveryType = 'envio' | 'recogida' | 'local'
 
 export type Database = {

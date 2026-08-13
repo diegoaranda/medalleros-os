@@ -4,6 +4,7 @@ create type public.order_status as enum (
   'nuevo',
   'diseno',
   'produccion',
+  'envolver',
   'listo',
   'entregado',
   'cancelado'

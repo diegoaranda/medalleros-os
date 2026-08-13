@@ -133,8 +133,9 @@ export function FinancesClient({ orders, payments, expenses, categories, reserve
 
       <section className="mb-8 space-y-4" aria-labelledby="finance-summary-title">
         <h2 id="finance-summary-title" className="sr-only">Resumen financiero</h2>
-        <div className="surface grid grid-cols-2 divide-x divide-y divide-border overflow-hidden lg:grid-cols-4 lg:divide-y-0">
-          <FinanceMetric label="Vendido" value={formatMoney(metrics.sold)} tone="slate" />
+        <div className="surface grid grid-cols-2 divide-x divide-y divide-border overflow-hidden sm:grid-cols-3 lg:grid-cols-5 lg:divide-y-0">
+          <FinanceMetric label="Medalleros vendidos" value={String(metrics.soldCount)} tone="slate" />
+          <FinanceMetric label="Total vendido" value={formatMoney(metrics.sold)} tone="slate" />
           <FinanceMetric label="Cobrado" value={formatMoney(metrics.collected)} tone="green" />
           <FinanceMetric label="Pendiente" value={formatMoney(metrics.pending)} tone="red" />
           <FinanceMetric

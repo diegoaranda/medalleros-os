@@ -89,17 +89,19 @@ export async function updateEugenioCost(orderId: string, value: string): Promise
   return { ok: true, data }
 }
 
-export async function setProductionOrderStatus(orderId: string, status: Extract<OrderStatus, 'produccion' | 'listo'>): Promise<ActionResult<{ id: string; status: OrderStatus }>> {
+export async function setProductionOrderStatus(orderId: string, status: Extract<OrderStatus, 'envolver' | 'listo'>): Promise<ActionResult<{ id: string; status: OrderStatus }>> {
   const { supabase, user } = await requireUser()
   if (!user) return { ok: false, error: 'Tu sesión expiró. Vuelve a iniciar sesión.' }
 
+  const expectedCurrentStatus: OrderStatus = status === 'envolver' ? 'produccion' : 'envolver'
   const { data, error } = await (supabase.from('orders') as any)
     .update({ status })
     .eq('id', orderId)
+    .eq('status', expectedCurrentStatus)
     .select('id, status')
-    .single()
+    .maybeSingle()
 
-  if (error) return { ok: false, error: 'No se pudo cambiar el estado del pedido.' }
+  if (error || !data) return { ok: false, error: 'No se pudo cambiar el estado del pedido. Actualiza la página e inténtalo otra vez.' }
 
   revalidateProductionSurfaces()
   return { ok: true, data }

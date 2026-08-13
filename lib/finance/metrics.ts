@@ -58,7 +58,7 @@ export function calculateFinanceMetrics(
 
   const sold = sum(periodOrders.map((order) => order.total_amount))
   const collected = sum(periodPayments.map((payment) => payment.amount))
-  const pending = sum(orders.filter(nonCancelled).map((order) => order.balance_amount))
+  const pending = sum(periodOrders.map((order) => order.balance_amount))
   const productionCosts = sum(periodOrders.map((order) => order.production_cost ?? 0))
   const productionExpenses = sum(periodOrders.map((order) => order.production_expense))
   const orderFinancials = periodOrders.map((order) => calculateOrderFinancials(order, reservePercentage))
@@ -69,6 +69,7 @@ export function calculateFinanceMetrics(
   const availableProductionExpenseFund = productionExpenses - expensesTotal
 
   return {
+    soldCount: periodOrders.length,
     sold,
     collected,
     pending,

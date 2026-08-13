@@ -36,14 +36,14 @@ export function ProductionCard({ order, reservePercentage, sports, paymentMethod
   const advanceStatus = () => {
     setError('')
     startTransition(async () => {
-      const result = await setProductionOrderStatus(order.id, 'listo')
+      const result = await setProductionOrderStatus(order.id, 'envolver')
 
       if (!result.ok) {
         setError(result.error)
         return
       }
 
-      window.dispatchEvent(new CustomEvent('production-order-collected', { detail: { message: 'Pedido enviado a Entregas.' } }))
+      window.dispatchEvent(new CustomEvent('production-order-collected', { detail: { message: 'Pedido recogido y pendiente de envolver.' } }))
       router.refresh()
       setShowAdvanceConfirmation(false)
     })
@@ -149,7 +149,7 @@ export function ProductionCard({ order, reservePercentage, sports, paymentMethod
             </div>
             <div className="space-y-5 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-5">
               <p id={`advance-order-description-${order.id}`} className="text-sm text-muted-foreground">
-                El pedido saldrá de Producción y pasará al módulo Entregas.
+                El pedido saldrá de Producción y quedará pendiente de envolver.
               </p>
               {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
               <div className="flex gap-3">

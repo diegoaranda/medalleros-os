@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ClipboardList, DollarSign, Eye } from 'lucide-react'
+import { AlertTriangle, ClipboardList, DollarSign, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import type { OrderWithFinancials } from '@/lib/data/queries'
@@ -73,6 +73,7 @@ export function OrdersList({
                   <p className="eyebrow truncate">Solicitud {displayRequestNumber(order.request_number)}</p>
                   <p className="mt-1 truncate font-semibold text-foreground">{order.customer_name}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">{order.sport_name} · {deliveryTypeLabels[normalizeDeliveryType(order.delivery_type)]}</p>
+                  {Number(order.production_cost) <= 0 ? <p className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-amber-700"><AlertTriangle size={13} />Costo Eugenio pendiente</p> : null}
                 </div>
                 <span className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold ${statusColors[normalizeOrderStatus(order.status)]}`}>
                   {statusLabels[normalizeOrderStatus(order.status)]}
@@ -100,7 +101,7 @@ export function OrdersList({
             <div className="hidden grid-cols-[1fr_1.35fr_.9fr_.8fr_.8fr_.8fr_.8fr_.9fr] items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/35 lg:grid">
               <div className="font-semibold text-foreground">{displayRequestNumber(order.request_number)}</div>
               <button className="truncate text-left font-semibold text-foreground hover:underline" type="button" onClick={() => setDetailState({ order, tab: 'info' })}>{order.customer_name}</button>
-              <div className="text-sm text-muted-foreground">{order.sport_name}</div>
+              <div className="text-sm text-muted-foreground"><span>{order.sport_name}</span>{Number(order.production_cost) <= 0 ? <span className="mt-1 flex items-center gap-1 text-xs font-semibold text-amber-700"><AlertTriangle size={13} />Costo pendiente</span> : null}</div>
               <div className="numeric text-right text-sm font-semibold text-foreground">{formatMoney(order.total_amount)}</div>
               <div className="numeric text-right text-sm font-semibold text-emerald-700">{formatMoney(order.paid_amount)}</div>
               <div className={`numeric text-right text-sm font-bold ${order.balance_amount > 0 ? 'text-destructive' : 'text-emerald-700'}`}>{formatMoney(order.balance_amount)}</div>

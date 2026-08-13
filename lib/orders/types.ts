@@ -47,14 +47,15 @@ export type ActionResult<T = undefined> =
   | { ok: true; data: T }
   | { ok: false; error: string }
 
-export const orderStatuses: OrderStatus[] = ['nuevo', 'diseno', 'produccion', 'listo', 'entregado', 'cancelado']
-export const operationalOrderStatuses: OrderStatus[] = ['produccion', 'listo', 'entregado', 'cancelado']
+export const orderStatuses: OrderStatus[] = ['nuevo', 'diseno', 'produccion', 'envolver', 'listo', 'entregado', 'cancelado']
+export const operationalOrderStatuses: OrderStatus[] = ['produccion', 'envolver', 'listo', 'entregado', 'cancelado']
 
 export const statusLabels: Record<OrderStatus, string> = {
   nuevo: 'Producción',
   diseno: 'Producción',
   produccion: 'Producción',
-  listo: 'Listo',
+  envolver: 'Pendiente de envolver',
+  listo: 'Envuelto',
   entregado: 'Entregado',
   cancelado: 'Cancelado',
 }
@@ -72,6 +73,7 @@ export const statusColors: Record<OrderStatus, string> = {
   nuevo: 'bg-amber-100 text-amber-800',
   diseno: 'bg-amber-100 text-amber-800',
   produccion: 'bg-amber-100 text-amber-800',
+  envolver: 'bg-amber-100 text-amber-800',
   listo: 'bg-emerald-100 text-emerald-800',
   entregado: 'bg-slate-200 text-slate-700',
   cancelado: 'bg-red-100 text-red-700',
