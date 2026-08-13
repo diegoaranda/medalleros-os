@@ -30,7 +30,7 @@ import {
   statusLabels,
 } from '@/lib/orders/types'
 
-type ReportPeriod = 'week' | 'month' | 'custom'
+type ReportPeriod = 'week' | 'month' | 'selected-month' | 'all' | 'custom'
 type StatusFilter = 'all' | OrderWithFinancials['status']
 type DeliveryFilter = 'all' | OrderWithFinancials['delivery_type']
 type MetricTone = 'slate' | 'green' | 'amber' | 'purple' | 'red'
@@ -84,6 +84,14 @@ function dateFromInput(value: string, endOfDay = false) {
   return date
 }
 
+function monthRange(monthValue: string, today: Date) {
+  if (monthValue === 'all') return { from: new Date(0), to: endOfToday(today) }
+  const [year, month] = monthValue.split('-').map(Number)
+  const from = new Date(year, month - 1, 1)
+  const monthEnd = new Date(year, month, 0, 23, 59, 59, 999)
+  return { from, to: monthEnd > today ? endOfToday(today) : monthEnd }
+}
+
 function SavingsDistribution({ savings, household }: { savings: number; household: number }) {
   const distributable = savings + household
 
@@ -122,6 +130,7 @@ function SavingsDistribution({ savings, household }: { savings: number; househol
 export function ReportsClient({ orders, payments, expenses, reservePercentage, error }: ReportsClientProps) {
   const today = useMemo(() => new Date(), [])
   const [period, setPeriod] = useState<ReportPeriod>('month')
+  const [selectedMonth, setSelectedMonth] = useState(() => dateInputValue(today).slice(0, 7))
   const [customFrom, setCustomFrom] = useState(() => dateInputValue(startOfMonth(today)))
   const [customTo, setCustomTo] = useState(() => dateInputValue(today))
   const [requestFilter, setRequestFilter] = useState('')
@@ -141,14 +150,19 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
     () => Array.from(new Set(orders.map((order) => order.sport_name))).sort((a, b) => a.localeCompare(b, 'es')),
     [orders],
   )
+  const availableMonths = useMemo(() => Array.from(new Set(orders.map((order) => order.created_at.slice(0, 7))))
+    .filter((value) => /^\d{4}-\d{2}$/.test(value))
+    .sort((left, right) => right.localeCompare(left)), [orders])
   const range = useMemo(() => {
     if (period === 'week') return { from: startOfWeek(today), to: endOfToday(today) }
     if (period === 'month') return { from: startOfMonth(today), to: endOfToday(today) }
+    if (period === 'all') return monthRange('all', today)
+    if (period === 'selected-month') return monthRange(selectedMonth, today)
     return {
       from: dateFromInput(customFrom),
       to: dateFromInput(customTo, true),
     }
-  }, [customFrom, customTo, period, today])
+  }, [customFrom, customTo, period, selectedMonth, today])
 
   const ordersMatchingAttributes = useMemo(() => {
     const normalizedRequest = requestFilter.trim().toLocaleLowerCase('es')
@@ -205,6 +219,7 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
 
   const resetFilters = () => {
     setPeriod('month')
+    setSelectedMonth(dateInputValue(today).slice(0, 7))
     setCustomFrom(dateInputValue(startOfMonth(today)))
     setCustomTo(dateInputValue(today))
     setRequestFilter('')
@@ -235,6 +250,10 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
         ? 'Esta semana'
         : period === 'month'
           ? 'Este mes'
+          : period === 'all'
+            ? 'Todos'
+            : period === 'selected-month'
+              ? new Intl.DateTimeFormat('es-BO', { month: 'long', year: 'numeric' }).format(range.from)
           : `${customFrom || 'Sin fecha'} al ${customTo || 'Sin fecha'}`
 
       await exportReportToExcel({
@@ -324,6 +343,29 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
               </button>
             ))}
           </div>
+
+          <label className="mt-4 block max-w-sm text-sm text-muted-foreground">
+            Mes del reporte
+            <select
+              value={period === 'all' ? 'all' : period === 'selected-month' ? selectedMonth : ''}
+              onChange={(event) => {
+                const value = event.target.value
+                if (!value) return
+                setSelectedMonth(value === 'all' ? selectedMonth : value)
+                setPeriod(value === 'all' ? 'all' : 'selected-month')
+                setExportState('idle')
+              }}
+              className={`${inputClasses} mt-1`}
+            >
+              <option value="" disabled>Seleccionar mes</option>
+              <option value="all">Todos</option>
+              {availableMonths.map((value) => {
+                const date = new Date(`${value}-01T00:00:00`)
+                const label = new Intl.DateTimeFormat('es-BO', { month: 'long', year: 'numeric' }).format(date)
+                return <option key={value} value={value}>{label.charAt(0).toUpperCase() + label.slice(1)}</option>
+              })}
+            </select>
+          </label>
 
           {period === 'custom' ? (
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -446,7 +488,8 @@ export function ReportsClient({ orders, payments, expenses, reservePercentage, e
           <p className="mt-1 text-sm text-muted-foreground">Resultado financiero del período seleccionado.</p>
         </div>
         <div className="space-y-4">
-          <div className="surface grid grid-cols-2 divide-x divide-y divide-border overflow-hidden lg:grid-cols-5 lg:divide-y-0">
+          <div className="surface grid grid-cols-2 divide-x divide-y divide-border overflow-hidden sm:grid-cols-3 lg:grid-cols-6 lg:divide-y-0">
+            <MetricCard label="Medalleros vendidos" value={metrics.soldCount} tone="slate" />
             <MetricCard label="Total vendido" value={formatMoney(metrics.sold)} tone="slate" />
             <MetricCard label="Total cobrado" value={formatMoney(metrics.collected)} tone="green" />
             <MetricCard label="Costo de Eugenio" value={formatMoney(metrics.productionCosts)} tone="amber" />

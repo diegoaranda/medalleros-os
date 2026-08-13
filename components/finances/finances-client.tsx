@@ -9,7 +9,7 @@ import { FinanceCard } from '@/components/finances/finance-card'
 import { RegisterExpenseModal } from '@/components/finances/register-expense-modal'
 import type { Database } from '@/lib/supabase/database.types'
 import type { OrderWithFinancials } from '@/lib/data/queries'
-import { calculateFinanceMetrics, endOfToday, isInRange, type Expense, type Payment } from '@/lib/finance/metrics'
+import { calculateFinanceMetrics, endOfToday, type Expense, type Payment } from '@/lib/finance/metrics'
 import { formatMoney } from '@/lib/orders/types'
 
 type ExpenseCategory = Database['public']['Tables']['expense_categories']['Row']
@@ -41,32 +41,15 @@ type FinancesClientProps = {
   error?: string
 }
 
-function getMonthRange(monthValue: string) {
-  if (monthValue === 'all') {
-    return { from: new Date(0), to: endOfToday() }
-  }
-
-  const [year, month] = monthValue.split('-').map(Number)
-  const from = new Date(year, month - 1, 1)
-  const monthEnd = new Date(year, month, 0, 23, 59, 59, 999)
-  const now = endOfToday()
-  return { from, to: monthEnd > now ? now : monthEnd }
-}
-
 export function FinancesClient({ orders, payments, expenses, categories, reservePercentage, error }: FinancesClientProps) {
   const [showExpenseModal, setShowExpenseModal] = useState(false)
-  const [month, setMonth] = useState('all')
   const [categoryId, setCategoryId] = useState('all')
-  const range = useMemo(() => getMonthRange(month), [month])
+  const range = useMemo(() => ({ from: new Date(0), to: endOfToday() }), [])
   const selectedCategory = categories.find((category) => category.id === categoryId)
   const filteredExpenses = useMemo(() => expenses
-    .filter((expense) => {
-      const isInPeriod = isInRange(expense.expense_date, range)
-      const isInCategory = categoryId === 'all' || expense.category_id === categoryId || expense.category_name === selectedCategory?.name
-      return isInPeriod && isInCategory
-    })
+    .filter((expense) => categoryId === 'all' || expense.category_id === categoryId || expense.category_name === selectedCategory?.name)
     .sort((left, right) => new Date(right.expense_date).getTime() - new Date(left.expense_date).getTime()),
-  [categoryId, expenses, range, selectedCategory?.name])
+  [categoryId, expenses, selectedCategory?.name])
   const metrics = useMemo(
     () => calculateFinanceMetrics(orders, payments, filteredExpenses, range, reservePercentage),
     [filteredExpenses, orders, payments, range, reservePercentage],
@@ -79,7 +62,7 @@ export function FinancesClient({ orders, payments, expenses, categories, reserve
       count: categoryExpenses.length,
     }
   }).filter((item) => categoryId === 'all' || item.count > 0), [categories, categoryId, filteredExpenses])
-  const isDefaultFilter = month === 'all' && categoryId === 'all'
+  const isDefaultFilter = categoryId === 'all'
 
   return (
     <div className="app-page">
@@ -101,23 +84,9 @@ export function FinancesClient({ orders, payments, expenses, categories, reserve
       <section className="surface mb-6 p-4 sm:p-5" aria-labelledby="expense-filters-title">
         <div className="mb-3">
           <h2 id="expense-filters-title" className="font-semibold text-foreground">Filtros de gastos</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Consulta el historial por mes y categoría.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Consulta el historial por categoría.</p>
         </div>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:items-end lg:grid-cols-[minmax(11rem,0.7fr)_minmax(13rem,1fr)_auto]">
-          <label>
-            <span className="field-label">Período</span>
-            <select value={month} onChange={(event) => setMonth(event.target.value)} className="field-control">
-              <option value="all">Todos los registros</option>
-              {Array.from({ length: 24 }, (_, index) => {
-                const date = new Date()
-                date.setDate(1)
-                date.setMonth(date.getMonth() - index)
-                const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-                const label = new Intl.DateTimeFormat('es-BO', { month: 'long', year: 'numeric' }).format(date)
-                return <option key={value} value={value}>{label.charAt(0).toUpperCase() + label.slice(1)}</option>
-              })}
-            </select>
-          </label>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(13rem,1fr)_auto] sm:items-end">
           <label>
             <span className="field-label">Tipo de gasto</span>
             <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)} className="field-control">
@@ -125,7 +94,7 @@ export function FinancesClient({ orders, payments, expenses, categories, reserve
               {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
             </select>
           </label>
-          <Button type="button" variant="outline" className="md:col-span-2 lg:col-span-1" onClick={() => { setMonth('all'); setCategoryId('all') }} disabled={isDefaultFilter}>
+          <Button type="button" variant="outline" onClick={() => setCategoryId('all')} disabled={isDefaultFilter}>
             <RotateCcw size={16} /> Limpiar filtros
           </Button>
         </div>
@@ -133,9 +102,8 @@ export function FinancesClient({ orders, payments, expenses, categories, reserve
 
       <section className="mb-8 space-y-4" aria-labelledby="finance-summary-title">
         <h2 id="finance-summary-title" className="sr-only">Resumen financiero</h2>
-        <div className="surface grid grid-cols-2 divide-x divide-y divide-border overflow-hidden sm:grid-cols-3 lg:grid-cols-5 lg:divide-y-0">
-          <FinanceMetric label="Medalleros vendidos" value={String(metrics.soldCount)} tone="slate" />
-          <FinanceMetric label="Total vendido" value={formatMoney(metrics.sold)} tone="slate" />
+        <div className="surface grid grid-cols-2 divide-x divide-y divide-border overflow-hidden lg:grid-cols-4 lg:divide-y-0">
+          <FinanceMetric label="Vendido" value={formatMoney(metrics.sold)} tone="slate" />
           <FinanceMetric label="Cobrado" value={formatMoney(metrics.collected)} tone="green" />
           <FinanceMetric label="Pendiente" value={formatMoney(metrics.pending)} tone="red" />
           <FinanceMetric
