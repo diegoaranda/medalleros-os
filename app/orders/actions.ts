@@ -169,13 +169,21 @@ export async function updateOrderStatus(id: string, status: OrderStatus): Promis
   const { supabase, user } = await requireUser()
   if (!user) return { ok: false, error: 'Tu sesión expiró. Vuelve a iniciar sesión.' }
   if (!isOrderStatus(status)) return { ok: false, error: 'Estado inválido.' }
+  if (status === 'cancelado') return { ok: false, error: 'Usa Acciones administrativas para confirmar la cancelación.' }
+  const { data: current, error: currentError } = await (supabase.from('orders') as any)
+    .select('status, updated_at').eq('id', id).single()
+  if (currentError || !current) return { ok: false, error: 'El pedido ya no existe o no tienes acceso.' }
+  if (current.status === 'cancelado') return { ok: false, error: 'El pedido está cancelado. Actualiza la página.' }
+  if (current.status === 'entregado' && status !== 'entregado') {
+    return { ok: false, error: 'Usa Deshacer entrega en Acciones administrativas.' }
+  }
 
   const update: OrderUpdate = {
     status,
     delivered_at: status === 'entregado' ? new Date().toISOString() : null,
   }
 
-  const { data, error } = await (supabase.from('orders') as any).update(update).eq('id', id).select('id, status').single()
+  const { data, error } = await (supabase.from('orders') as any).update(update).eq('id', id).eq('status', current.status).eq('updated_at', current.updated_at).select('id, status').single()
 
   if (error) return { ok: false, error: 'No se pudo cambiar el estado.' }
 

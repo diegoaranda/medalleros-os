@@ -25,6 +25,7 @@ import {
   statusLabels,
   todayDateInputValue,
 } from '@/lib/orders/types'
+import { OrderAdminActions } from '@/app/orders/admin/order-admin-actions'
 import { OrderFormModal } from './order-form-modal'
 import { parseMoneyInput } from '@/lib/money'
 
@@ -284,9 +285,9 @@ export function OrderDetailModal({
                       value={normalizeOrderStatus(order.status)}
                       onChange={(event) => handleStatusChange(event.target.value as OrderWithFinancials['status'])}
                       className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                      disabled={isStatusPending}
+                      disabled={isStatusPending || order.status === 'entregado' || order.status === 'cancelado'}
                     >
-                      {operationalOrderStatuses.map((status) => (
+                      {operationalOrderStatuses.filter((status) => status !== 'cancelado' || order.status === 'cancelado').map((status) => (
                         <option key={status} value={status}>{statusLabels[status]}</option>
                       ))}
                     </select>
@@ -493,6 +494,7 @@ export function OrderDetailModal({
                   <Edit2 size={16} className="mr-2" />
                   Editar pedido
                 </Button>
+                <OrderAdminActions order={order} onCompleted={() => onOpenChange(false)} />
               </div>
             )}
           </div>

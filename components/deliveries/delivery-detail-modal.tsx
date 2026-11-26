@@ -1,6 +1,7 @@
 'use client'
 
 import { AlertTriangle, X } from 'lucide-react'
+import { OrderAdminActions } from '@/app/orders/admin/order-admin-actions'
 import { Button } from '@/components/ui/button'
 import type { OrderWithFinancials } from '@/lib/data/queries'
 import {
@@ -66,6 +67,7 @@ export function DeliveryDetailModal({ order, open, onOpenChange, onEdit }: Deliv
 
           {order.notes ? <p className="text-sm text-muted-foreground bg-muted/50 rounded p-3">{order.notes}</p> : null}
           <Button type="button" variant="outline" className="w-full" onClick={onEdit}>Editar pedido</Button>
+          <OrderAdminActions order={order} onCompleted={() => onOpenChange(false)} />
         </div>
       </div>
     </div>

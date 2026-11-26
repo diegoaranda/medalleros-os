@@ -91,7 +91,8 @@ export function calculateReportMetrics(
 ) {
   const periodOrders = orders.filter((order) => isInRange(order.created_at, range))
   const nonCancelledPeriodOrders = periodOrders.filter(nonCancelled)
-  const periodOrderIds = new Set(nonCancelledPeriodOrders.map((order) => order.id))
+  // Collections remain cash received even when an order is cancelled.
+  const periodOrderIds = new Set(periodOrders.map((order) => order.id))
   const periodPayments = payments.filter(
     (payment) => periodOrderIds.has(payment.order_id) && isInRange(payment.paid_at, range),
   )

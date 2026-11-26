@@ -7,6 +7,7 @@ export type Database = {
   public: {
     Tables: {
       profiles: {
+        Relationships: []
         Row: {
           id: string
           email: string
@@ -31,6 +32,7 @@ export type Database = {
       }
       sports: CatalogTable
       medallero_catalog: {
+        Relationships: []
         Row: {
           id: string
           name: string
@@ -62,6 +64,7 @@ export type Database = {
       payment_methods: CatalogTable
       expense_categories: CatalogTable
       financial_settings: {
+        Relationships: []
         Row: {
           id: string
           production_expense_default: number
@@ -85,6 +88,7 @@ export type Database = {
         }
       }
       orders: {
+        Relationships: []
         Row: {
           id: string
           request_number: string
@@ -156,6 +160,7 @@ export type Database = {
         }
       }
       order_payments: {
+        Relationships: []
         Row: {
           id: string
           order_id: string
@@ -190,7 +195,30 @@ export type Database = {
           created_at?: string
         }
       }
+      order_admin_events: {
+        Relationships: []
+        Row: {
+          id: string
+          order_id: string
+          action: 'cancel' | 'undo_delivery'
+          previous_status: OrderStatus
+          new_status: OrderStatus
+          created_by: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          action: 'cancel' | 'undo_delivery'
+          previous_status: OrderStatus
+          new_status: OrderStatus
+          created_by?: string
+          created_at?: string
+        }
+        Update: never
+      }
       expenses: {
+        Relationships: []
         Row: {
           id: string
           category_id: string | null
@@ -225,12 +253,14 @@ export type Database = {
     }
     Views: {
       order_financials: {
+        Relationships: []
         Row: Database['public']['Tables']['orders']['Row'] & {
           paid_amount: number
           balance_amount: number
         }
       }
       business_metrics: {
+        Relationships: []
         Row: {
           total_sold: number
           total_collected: number
@@ -243,7 +273,16 @@ export type Database = {
         }
       }
     }
-    Functions: Record<string, never>
+    Functions: {
+      get_order_admin_snapshot: {
+        Args: { p_order_id: string }
+        Returns: Json
+      }
+      apply_order_admin_action: {
+        Args: { p_order_id: string; p_action: string; p_expected_revision: string; p_financial_confirmation?: boolean }
+        Returns: string
+      }
+    }
     Enums: {
       order_status: OrderStatus
       delivery_type: DeliveryType
@@ -253,6 +292,7 @@ export type Database = {
 }
 
 type CatalogTable = {
+  Relationships: []
   Row: {
     id: string
     name: string
